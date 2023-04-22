@@ -3,25 +3,24 @@ import time
 import pandas as pd
 import numpy as np
 from sklearn.calibration import LabelEncoder
-from sklearn.preprocessing import MinMaxScaler
 import keras
+import joblib
 
 # # Get model path and load model
 model_path = './MotionSense/MotionSense_LSTM.h5'
 model = keras.models.load_model(model_path)
 
-# Load data
-training_data = pd.read_csv('./MotionSense/train_motionsense_lstm.csv')
-
-# Initilize encoder and set categories
+# Load encoder
 encoder = LabelEncoder()
+encoder_filename = "motionsense_lstm_label_encoder.npy"
+encoder.classes_ = np.load('./MotionSense/' + encoder_filename, allow_pickle=True)
+
+# Load scalar
+scaler_filename = "motionsense_lstm_scalar.save"
+scaler = joblib.load('./MotionSense/' + scaler_filename) 
+
+# Set num categories
 n_categories = 6
-
-# Fit encoder
-encoder.fit(training_data['test_type'])
-
-# Define normalization function
-scaler = MinMaxScaler(feature_range=(-1, 1))
 
 # Define columns to normalize
 normalize_columns = [
@@ -46,11 +45,8 @@ normalize_columns = [
     # 'age'
 ]
 
-# Fit the scaler to the training data
-scaler.fit(training_data[normalize_columns])
-
 # Store the number of features and number of timesteps back
-n_features = len(training_data[normalize_columns].columns)
+n_features = len(normalize_columns)
 n_timesteps = 50
 
 # Buffer to store the most recent samples
@@ -79,7 +75,7 @@ def transform_data(sample, scaler, data_buffer, n_timesteps, n_features):
 validation_data = pd.read_csv('./MotionSense/validation_motionsense_lstm.csv')
 
 # Num rows to test
-num_test_rows = 100
+num_test_rows = 1000
 
 # Start the timer
 start_time = time.time()
