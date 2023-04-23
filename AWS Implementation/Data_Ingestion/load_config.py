@@ -1,9 +1,6 @@
 # Import modules
 import configparser
-import time
 import boto3
-import json
-import random
 
 # Read AWS credentials from the config file
 cfg_data = configparser.ConfigParser()
