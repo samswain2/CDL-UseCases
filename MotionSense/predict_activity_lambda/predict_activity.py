@@ -1,9 +1,13 @@
 # Import libraries
 import pandas as pd
 import numpy as np
-from sklearn.calibration import LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 import keras
 import joblib
+from flask import Flask, request, jsonify
+
+# Create a Flask app instance
+app = Flask(__name__)
 
 # # Get model path and load model
 model_path = 'LSTM.h5'
@@ -63,3 +67,29 @@ def transform_data(sample, scaler, data_buffer, n_timesteps, n_features):
     X = data_buffer.reshape(1, n_timesteps, n_features)
     
     return X
+
+
+## Flask App ##
+
+# Define the API endpoint and request method
+@app.route('/predict', methods=['POST'])
+def predict():
+    # Get the incoming data from the request
+    data = request.get_json()
+
+    # Convert the data into a DataFrame
+    sample = pd.DataFrame(data, columns=normalize_columns)
+
+    # Transform the data and get the prediction
+    X = transform_data(sample, scaler, data_buffer, n_timesteps, n_features)
+    prediction = model.predict(X)
+
+    # Get the class label for the prediction
+    class_label = encoder.inverse_transform(prediction.argmax(axis=-1))[0]
+
+    # Return the prediction as JSON
+    return jsonify({'prediction': class_label})
+
+# Run the Flask app
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
