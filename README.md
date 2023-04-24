@@ -36,3 +36,8 @@ For more information about REFIT, visit https://www.mccormick.northwestern.edu/r
 
 # Contributing
 Please contact ... for details on how to contribute to this project.
+
+# AWS architecture (WIP)
+
+<img width="777" alt="image" src="https://user-images.githubusercontent.com/113140351/234132446-6b3521a9-90fe-435f-a943-28369334b963.png">
+
