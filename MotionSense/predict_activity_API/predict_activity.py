@@ -82,7 +82,7 @@ def predict():
 
     # Transform the data and get the prediction
     X = transform_data(sample, scaler, data_buffer, n_timesteps, n_features)
-    prediction = model.predict(X)
+    prediction = model.predict(X, verbose=False)
 
     # Get the class label for the prediction
     class_label = encoder.inverse_transform(prediction.argmax(axis=-1))[0]

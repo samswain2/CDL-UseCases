@@ -3,7 +3,7 @@ import requests
 import json
 
 # Read the validation dataset
-validation_data = pd.read_csv(r"C:\Users\nuke2\Desktop\NW Work\CDL usecases\MotionSense\validation_motionsense_lstm.csv")
+validation_data = pd.read_csv(r"C:\Users\nuke2\Desktop\NW Work\Data\CDL Usecases\validation_motionsense_lstm.csv")
 
 # Define columns to pass into api
 api_columns = [
@@ -48,6 +48,7 @@ for idx, row in validation_data.iloc[0:num_test_rows, :].iterrows():
     # Parse the JSON response and store the prediction
     prediction = json.loads(response.text)['prediction']
     results.append(prediction)
+    print(prediction)
 
 # Convert the results to a DataFrame
 results_df = pd.DataFrame(results, columns=['prediction'])
