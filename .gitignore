@@ -2,4 +2,5 @@
 __pycache__/
 keys.txt
 .ipynb_checkpoints/
+*.csv
 ```
