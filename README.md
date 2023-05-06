@@ -38,6 +38,10 @@ For more information about REFIT, visit https://www.mccormick.northwestern.edu/r
 Please contact ... for details on how to contribute to this project.
 
 ### AWS architecture (WIP)
+Link to cost estimate: https://calculator.aws/#/estimate?id=1483578a255cd885954239b93c9ac7045dd915bd
 
-<img width="777" alt="image" src="https://user-images.githubusercontent.com/113140351/234132446-6b3521a9-90fe-435f-a943-28369334b963.png">
+![CDL_Use_Cases_v3](https://user-images.githubusercontent.com/113140351/235539416-ab740162-d786-4d36-a858-4ae840880c95.png)
+
+
+
 
