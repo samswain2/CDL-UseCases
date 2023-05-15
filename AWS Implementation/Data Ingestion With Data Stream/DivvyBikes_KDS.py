@@ -1,47 +1,49 @@
 import json
 import csv
 import boto3
+import time
 from typing import List
 
 def reading_csv(file_location: str) -> List:
-	# Make JSON from the Divvy trip data CSV files
-	DivvyRides = []
+	# Make JSON from the Motion Sense data CSV files
+	Divvy = []
 	count = 0
 
 	with open(file_location, encoding='utf-8') as csvf:
 		csvReader = csv.DictReader(csvf)
 		for rows in csvReader:
-			DivvyRides.append(rows)
-			if count == 1050:
+			Divvy.append(rows)
+			if count == 12:
 				break
 			count+=1
 
-	return DivvyRides
+	return Divvy
 
-def create_kds(divvy_rides: List) -> None:
+def create_kds(divvy: List) -> None:
 	# Create a kinesis client
-	client = boto3.client('kinesis')
+	region_name = 'us-east-2'
+	client = boto3.client('kinesis', region_name = region_name)
 	counter = 0
 
-	for ride in divvy_rides:
+	for i in divvy:
 
 		# Send message to Kinesis DataStream
 		response = client.put_record(
-			StreamName = "divvy_example",
-			Data = json.dumps(ride),
-			PartitionKey = str(hash(ride['trip_id']))
+			StreamName = "divvy-stream",
+			Data = json.dumps(i),
+			PartitionKey = str(hash(i['id']))
 		)
 
 		counter = counter + 1
-
-		# print('Message sent #' + str(counter))
+		# time.sleep(1)
+		print('Message sent #' + str(counter))
 
 		if response['ResponseMetadata']['HTTPStatusCode'] != 200:
 			print('Error!')
 			print(response)
 
 if __name__ == '__main__':
-	file_location = 'data/trips_full.csv'
+	file_location = 'streamed.csv'
 	file_contents = reading_csv(file_location)
 
 	create_kds(file_contents)
