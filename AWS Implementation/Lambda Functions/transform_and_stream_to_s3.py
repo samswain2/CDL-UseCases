@@ -1,29 +1,47 @@
 import json
 import pandas as pd
 import boto3
-from datetime import datetime
 import base64
-
+from datetime import datetime
 
 # import boto3
 
 landmark  = pd.read_csv('s3://usecases-glue-jobs/divvy/static/landmark_clean.csv')
 weather = pd.read_csv('s3://usecases-glue-jobs/divvy/streamed/weather_streamed.csv')
+ohe_zipcode = pd.read_csv('s3://usecases-glue-jobs/divvy/static/ohe_zipcode.csv')
 
 def join_dataframes(incoming_data, landmark, weather):
+    # Change the data types of columns to be the same before performing the merge
+    incoming_data['start_time'] = pd.to_datetime(incoming_data['start_time'])
+    weather['time'] = pd.to_datetime(weather['time'])
+    incoming_data['zip'] = incoming_data['zip'].astype(str)
+    ohe_zipcode['zip'] = ohe_zipcode['zip'].astype(str)
+    landmark['zip_code'] = landmark['zip_code'].astype(str)
+    
     # Perform the join operation(s) based on your requirements
     # Example: merge dataframes on a common column named 'id'
-    result = incoming_data.merge(weather, left_on="start_time", right_on="time", how = "left").merge(landmark, left_on = "zip", right_on="zip_code", how='left')
-    result = result.drop(columns = ['Unnamed: 0_x', 'Unnamed: 0_y', "Unnamed: 0"])
+    result = incoming_data.merge(weather, left_on="start_time", right_on="time", how="left").merge(landmark, left_on="zip", right_on="zip_code", how='left')
+    result = result.drop(columns=['Unnamed: 0_x', 'Unnamed: 0_y'])
+    result = result.merge(ohe_zipcode, left_on="zip", right_on = "zip", how = 'left')
+    result = result.drop(columns = ['zip', "time", "Unnamed: 0"])
+    
     return result
+
 
 def lambda_handler(event, context):
     # Create an S3 client
+
     s3 = boto3.client('s3')
+
+    # d = pd.read_csv('s3://usecases-glue-jobs/divvy/streamed/streamed.csv')
+    # joined_data = join_dataframes(d, landmark, weather)
+    # print(joined_data.head(5))
+
 
     # Iterate over each record
     for record in event['Records']:
         # Kinesis data is base64 encoded so decode here
+        print("raw", record["kinesis"]["data"])
         payload = base64.b64decode(record["kinesis"]["data"])
 
         # Assuming the payload is a json. If not, adjust this line accordingly
