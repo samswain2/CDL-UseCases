@@ -31,7 +31,7 @@ def create_kds(hard_drive: List) -> None:
 		response = client.put_record(
 			StreamName = "harddrive-stream",
 			Data = json.dumps(i),
-			PartitionKey = str(hash(i['serial_num']))
+			PartitionKey = str(hash(i['serial_number']))
 		)
 
 		counter = counter + 1
