@@ -4,3 +4,5 @@ keys.txt
 .ipynb_checkpoints/
 *.csv
 ```
+use_cases_env/*
+Data/*
