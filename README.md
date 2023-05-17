@@ -4,7 +4,7 @@ This repository contains the implementation of IoT use cases using REFIT and clo
 # Overview
 CDL's mission is to provide resources and expertise for companies seeking to establish or improve access to artificial intelligence (AI) and achieve proof of concept or deployment. The project focuses on developing and implementing IoT use cases using REFIT, a system designed to consume and capitalize on IoT infrastructure, and comparing it with cloud platforms.
 
-For more information about REFIT, visit https://www.mccormick.northwestern.edu/research/deep-learning/projects/refit.
+More [information](https://www.mccormick.northwestern.edu/research/deep-learning/projects/refit) on REFIT.
 
 # Objectives
 1. Develop and implement 3 IoT use cases based on public data in REFIT
@@ -38,11 +38,6 @@ For more information about REFIT, visit https://www.mccormick.northwestern.edu/r
 Please contact ... for details on how to contribute to this project.
 
 ### AWS architecture (WIP)
-Link to cost estimate: https://calculator.aws/#/estimate?id=1483578a255cd885954239b93c9ac7045dd915bd
+[Cost estimate](https://calculator.aws/#/estimate?id=1483578a255cd885954239b93c9ac7045dd915bd)
 
 <img width="613" alt="image" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/df7f1658-4759-43fe-8698-952d9eda7fb3">
-
-
-
-
-
