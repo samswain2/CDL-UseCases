@@ -1,5 +1,5 @@
 # Import libraries
-import joblib
+#import joblib
 import keras
 import pandas as pd
 import numpy as np
@@ -13,6 +13,22 @@ app = Flask(__name__)
 model_path = "../Model/Divvy_LSTM.h5"
 model = keras.models.load_model(model_path)
 
+# Column names
+columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_temp", 
+           "precip", "rain", "snow", "cloudcover", "windspeed", 
+           "60201", "60202", "60208", "60301", "60302", "60304", 
+           "60601", "60602", "60603", "60604", "60605", "60606", 
+           "60607", "60608", "60609", "60610", "60611", "60612", 
+           "60613", "60614", "60615", "60616", "60617", "60618", 
+           "60619", "60620", "60621", "60622", "60623", "60624", 
+           "60625", "60626", "60628", "60629", "60630", "60632", 
+           "60636", "60637", "60638", "60640", "60641", "60642", 
+           "60643", "60644", "60645", "60646", "60647", "60649", 
+           "60651", "60653", "60654", "60657", "60659", "60660", 
+           "60661", "60696", "60804", 
+           "hours_since_start", "Year sin", "Year cos", 
+           "Week sin", "Week cos", "Day sin", "Day cos"]
+
 ## Flask App ##
 
 # Define the API endpoint and request method
@@ -22,17 +38,17 @@ def predict():
     data = request.get_json()
 
     # Convert the data into a DataFrame
-    sample = pd.DataFrame(data, columns=normalize_columns)
+    sample = pd.DataFrame(data, columns=columns)
 
     # Transform the data and get the prediction
-    X = transform_data(sample, scaler, data_buffer, n_timesteps, n_features)
+    X = sample
     prediction = model.predict(X, verbose=False)
 
     # Get the class label for the prediction
     #class_label = encoder.inverse_transform(prediction.argmax(axis=-1))[0]
 
     # Return the prediction as JSON
-    return jsonify({"prediction": class_label})
+    return jsonify({"Prediction": prediction})
 
 # Run the Flask app
 if __name__ == "__main__":
