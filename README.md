@@ -35,7 +35,7 @@ More [information](https://www.mccormick.northwestern.edu/research/deep-learning
 4. For more information, refer to the DOCUMENTATION.md file
 
 # Contributing
-Please contact ... for details on how to contribute to this project.
+Please contact Sharika for details on how to contribute to this project.
 
 ### AWS architecture (WIP)
 [Cost estimate](https://calculator.aws/#/estimate?id=1483578a255cd885954239b93c9ac7045dd915bd)
