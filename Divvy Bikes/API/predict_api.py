@@ -6,6 +6,8 @@ import pandas as pd
 from flask import Flask, request, jsonify
 #from sklearn.preprocessing import LabelEncoder
 
+from transform_data import WindowGenerator
+
 # Create Flask app instance
 app = Flask(__name__)
 
@@ -29,6 +31,9 @@ columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_t
            "hours_since_start", "Year sin", "Year cos", 
            "Week sin", "Week cos", "Day sin", "Day cos"]
 
+# Define variable
+hif = 24
+
 ## Flask App ##
 
 # Define the API endpoint and request method
@@ -40,8 +45,12 @@ def predict():
     # Convert the data into a DataFrame
     sample = pd.DataFrame(data, columns=columns)
 
+    # Transform data 
+    w1 = WindowGenerator(input_width=30*24, label_width=hif, shift=hif,
+                         test_df = sample, label_columns=["trips"])
+
     # Generate prediction
-    prediction = model.predict(sample, verbose=False)
+    prediction = model.predict(w1, verbose=False)
 
     # Return the prediction as JSON
     return jsonify({"Prediction": prediction})
