@@ -40,7 +40,8 @@ Please contact ... for details on how to contribute to this project.
 ### AWS architecture (WIP)
 Link to cost estimate: https://calculator.aws/#/estimate?id=1483578a255cd885954239b93c9ac7045dd915bd
 
-![CDL_Use_Cases_v3](https://user-images.githubusercontent.com/113140351/235539416-ab740162-d786-4d36-a858-4ae840880c95.png)
+<img width="613" alt="image" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/df7f1658-4759-43fe-8698-952d9eda7fb3">
+
 
 
 
