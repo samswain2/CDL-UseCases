@@ -4,19 +4,21 @@ import json
 import os 
 
 # Read the validation dataset
-path = os.getcwd()
-validation_data = pd.read_csv(path + "/test.csv")
+# path = os.getcwd()
+validation_data = pd.read_csv(os.getcwd() + "/Hard Drives/test.csv")
 
 # Define columns to pass into api
 # Column names
-column_names = ["capacity_bytes",	"smart_1_normalized",	"smart_1_raw",	"smart_3_normalized",	"smart_3_raw",	"smart_4_raw",	"smart_5_raw",	
-                "smart_7_normalized",	"smart_9_normalized",	"smart_9_raw",	"smart_12_raw",	"smart_194_normalized",	"smart_194_raw",
-                "smart_197_raw", "smart_199_raw", "useful_life"]
+column_names = ["capacity_bytes",	"smart_1_normalized",\
+    	"smart_1_raw",	"smart_3_normalized",	"smart_3_raw",\
+        "smart_4_raw",	"smart_5_raw",	"smart_7_normalized",	"smart_9_normalized",\
+    	"smart_9_raw",	"smart_12_raw",	"smart_194_normalized",	"smart_194_raw",\
+        "smart_197_raw", "smart_199_raw"]
 
 validation_data = validation_data[column_names]
 
 # Define the API endpoint URL
-api_url = "http://localhost:5000/predict"
+api_url = "http://3.145.138.26:2000/predict"
 
 # Num rows to test
 num_test_rows = 100
@@ -29,11 +31,11 @@ for idx, row in validation_data.iloc[0:num_test_rows, :].iterrows():
     
     # Send a POST request to the API with the data
     response = requests.post(api_url, json=data)
+    print(response.json())
     
     # Parse the JSON response and store the prediction
-    prediction = json.loads(response.text)['prediction']
+    prediction = response.json()['prediction']
     results.append(prediction)
-    print(prediction)
 
 # Convert the results to a DataFrame
 results_df = pd.DataFrame(results, columns=['prediction'])
