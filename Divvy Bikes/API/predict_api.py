@@ -2,9 +2,9 @@
 #import joblib
 import keras
 import pandas as pd
-import numpy as np
+#import numpy as np
 from flask import Flask, request, jsonify
-from sklearn.preprocessing import LabelEncoder
+#from sklearn.preprocessing import LabelEncoder
 
 # Create Flask app instance
 app = Flask(__name__)
@@ -40,12 +40,8 @@ def predict():
     # Convert the data into a DataFrame
     sample = pd.DataFrame(data, columns=columns)
 
-    # Transform the data and get the prediction
-    X = sample
-    prediction = model.predict(X, verbose=False)
-
-    # Get the class label for the prediction
-    #class_label = encoder.inverse_transform(prediction.argmax(axis=-1))[0]
+    # Generate prediction
+    prediction = model.predict(sample, verbose=False)
 
     # Return the prediction as JSON
     return jsonify({"Prediction": prediction})
