@@ -1,10 +1,7 @@
 # Import libraries
-#import joblib
 import keras
 import pandas as pd
-#import numpy as np
 from flask import Flask, request, jsonify
-#from sklearn.preprocessing import LabelEncoder
 
 from transform_data import WindowGenerator
 
@@ -31,8 +28,13 @@ columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_t
            "hours_since_start", "Year sin", "Year cos", 
            "Week sin", "Week cos", "Day sin", "Day cos"]
 
-# Define variable
+# Define variables
 hif = 24
+input_width = 30*24
+required_data = 30
+
+# Buffer for incoming data
+data_buffer = []
 
 ## Flask App ##
 
@@ -58,3 +60,6 @@ def predict():
 # Run the Flask app
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
+
+
