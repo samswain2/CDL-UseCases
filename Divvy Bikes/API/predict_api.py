@@ -31,7 +31,7 @@ columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_t
 # Define variables
 hif = 24
 input_width = 30*24
-required_data = 30
+dp_req = 30
 
 # Buffer for incoming data
 data_buffer = []
@@ -41,25 +41,31 @@ data_buffer = []
 # Define the API endpoint and request method
 @app.route("/predict", methods=["POST"])
 def predict():
+    global data_buffer  # use the global variable
+
     # Get the incoming data from the request
     data = request.get_json()
 
-    # Convert the data into a DataFrame
-    sample = pd.DataFrame(data, columns=columns)
+    # Convert the data into a DataFrame and add to the buffer
+    data_buffer.append(pd.DataFrame(data, columns=columns))
 
-    # Transform data 
-    w1 = WindowGenerator(input_width=30*24, label_width=hif, shift=hif,
-                         test_df = sample, label_columns=["trips"])
+    # If we have less than 30 data points, return a message
+    if len(data_buffer) < dp_req:
+        return jsonify({"message": f"Collecting data, {len(data_buffer)} data points collected so far."})
 
-    # Generate prediction
-    prediction = model.predict(w1, verbose=False)
+    # If we have 30 or more data points, generate a prediction
+    if len(data_buffer) >= dp_req:
+        sample = pd.concat(data_buffer[-dp_req:], ignore_index=True)
+        w1 = WindowGenerator(input_width=input_width, label_width=hif, shift=hif, 
+                             test_df=sample, label_columns=["trips"])
 
-    # Return the prediction as JSON
-    return jsonify({"Prediction": prediction})
+        # Generate prediction
+        prediction = model.predict(w1.test, verbose=False)
+
+        # Return the prediction as JSON
+        return jsonify({"Prediction": prediction.tolist()})
 
 # Run the Flask app
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
-
-
+    
