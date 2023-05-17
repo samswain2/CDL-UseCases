@@ -31,10 +31,10 @@ api_columns = [
 validation_data = validation_data[api_columns]
 
 # Define the API endpoint URL
-api_url = "http://localhost:5000/predict"
+api_url = "http://13.58.130.45:5000/predict"
 
 # Num rows to test
-num_test_rows = 100
+num_test_rows = 10
 
 # Loop through the validation dataset and send requests to the API
 results = []
@@ -48,13 +48,15 @@ for idx, row in validation_data.iloc[0:num_test_rows, :].iterrows():
     # Parse the JSON response and store the prediction
     prediction = json.loads(response.text)['prediction']
     results.append(prediction)
-    print(prediction)
+    # print(data)
+    print(json.loads(response.text))
+    # print(prediction)
 
-# Convert the results to a DataFrame
-results_df = pd.DataFrame(results, columns=['prediction'])
+# # Convert the results to a DataFrame
+# results_df = pd.DataFrame(results, columns=['prediction'])
 
-# Save the results to a CSV file (optional)
-results_df.to_csv('api_results.csv', index=False)
+# # Save the results to a CSV file (optional)
+# results_df.to_csv('api_results.csv', index=False)
 
-# Print the results
-print(results_df)
+# # Print the results
+# print(results_df)
