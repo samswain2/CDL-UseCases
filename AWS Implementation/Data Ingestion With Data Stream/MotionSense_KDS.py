@@ -13,7 +13,7 @@ def reading_csv(file_location: str) -> List:
 		csvReader = csv.DictReader(csvf)
 		for rows in csvReader:
 			MotionSense.append(rows)
-			if count == 12:
+			if count == 9:
 				break
 			count+=1
 
