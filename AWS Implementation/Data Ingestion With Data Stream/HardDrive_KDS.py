@@ -35,7 +35,7 @@ def create_kds(hard_drive: List) -> None:
 		)
 
 		counter = counter + 1
-		time.sleep(5)
+		time.sleep(1)
 		print('Message sent #' + str(counter))
 
 		if response['ResponseMetadata']['HTTPStatusCode'] != 200:
