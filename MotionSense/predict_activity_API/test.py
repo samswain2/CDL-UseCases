@@ -3,7 +3,7 @@ import requests
 import json
 
 # Read the validation dataset
-validation_data = pd.read_csv(r"C:\Users\nuke2\Desktop\NW Work\Data\CDL Usecases\validation_motionsense_lstm.csv")
+validation_data = pd.read_csv(r"C:\Users\Sam\Desktop\NW Work\DATA\CDL\validation_motionsense_lstm.csv")
 
 # Define columns to pass into api
 api_columns = [
