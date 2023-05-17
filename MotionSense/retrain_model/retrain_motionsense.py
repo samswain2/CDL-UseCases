@@ -25,9 +25,8 @@ logging.info('Imports completed')
 ### ----------------- Settings ----------------- ###
 
 # Define paths
-train_path = "../CDL-UseCases/MotionSense/local_analysis/train_motionsense_lstm.csv"
-new_data_path = "Streamed_Path"
-new_labels_path = "../CDL-UseCases/MotionSense/local_analysis/y_retrain_data_motionsense.csv"
+train_path = "../CDL-UseCases/Data/train_motionsense_lstm.csv"
+new_labels_path = "../CDL-UseCases/Data/y_retrain_data_motionsense.csv"
 
 # Define model columns
 feature_columns = [
@@ -98,7 +97,6 @@ labels = pd.read_csv(new_labels_path)
 # Make sure that the new data and the labels have the same order
 new_data = new_data.sort_values('time_series_data')
 new_data = new_data[feature_columns]
-# labels = labels.sort_values('timestamp')
 
 # Add the labels to the new data
 new_data['test_type'] = labels['test_type']
@@ -106,7 +104,7 @@ new_data['test_type'] = labels['test_type']
 # Concat old and new training data
 df_train = pd.concat([df_train, new_data], ignore_index=True)
 
-df_train.to_csv("../CDL-UseCases/MotionSense/local_analysis/new_motionsense_training_data.csv")
+df_train.to_csv("../CDL-UseCases/Data/new_motionsense_training_data.csv", index=False)
 
 logging.info("Saved updated dataframe")
 
