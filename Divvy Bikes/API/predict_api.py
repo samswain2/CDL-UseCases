@@ -1,97 +1,71 @@
 # Import libraries
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import LabelEncoder
 import keras
-import joblib
+import pandas as pd
 from flask import Flask, request, jsonify
 
-# Create a Flask app instance
+from transform_data import WindowGenerator
+
+# Create Flask app instance
 app = Flask(__name__)
 
 # Get model path and load model
-model_path = 'LSTM.h5' #Change to Divvy
+model_path = "../Model/Divvy_LSTM.h5"
 model = keras.models.load_model(model_path)
 
+# Column names
+columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_temp", 
+           "precip", "rain", "snow", "cloudcover", "windspeed", 
+           "60201", "60202", "60208", "60301", "60302", "60304", 
+           "60601", "60602", "60603", "60604", "60605", "60606", 
+           "60607", "60608", "60609", "60610", "60611", "60612", 
+           "60613", "60614", "60615", "60616", "60617", "60618", 
+           "60619", "60620", "60621", "60622", "60623", "60624", 
+           "60625", "60626", "60628", "60629", "60630", "60632", 
+           "60636", "60637", "60638", "60640", "60641", "60642", 
+           "60643", "60644", "60645", "60646", "60647", "60649", 
+           "60651", "60653", "60654", "60657", "60659", "60660", 
+           "60661", "60696", "60804", 
+           "hours_since_start", "Year sin", "Year cos", 
+           "Week sin", "Week cos", "Day sin", "Day cos"]
 
-# This might not be used
-""" # Load encoder
-encoder = LabelEncoder()
-encoder_filename = "label_encoder.npy"
-encoder.classes_ = np.load(encoder_filename, allow_pickle=True)
+# Define variables
+hif = 24
+input_width = 30*24
+dp_req = 30
 
-# Load scalar
-scaler_filename = "scalar.save"
-scaler = joblib.load(scaler_filename) 
-
-# Set num categories
-n_categories = 6
-
-# Define columns to normalize
-normalize_columns = [
-    'attitude.roll', 
-    'attitude.pitch', 
-    'attitude.yaw',
-    'gravity.x', 
-    'gravity.y', 
-    'gravity.z',
-    'rotationRate.x', 
-    'rotationRate.y', 
-    'rotationRate.z',
-    'userAcceleration.x', 
-    'userAcceleration.y', 
-    'userAcceleration.z',
-    # 'attitude', 
-    # 'gravity', 
-    # 'rotationRate', 
-    # 'userAcceleration',
-    # 'weight', 
-    # 'height', 
-    # 'age'
-] 
-
-# Store the number of features and number of timesteps back
-n_features = len(normalize_columns)
-n_timesteps = 50
-
-# Buffer to store the most recent samples
-data_buffer = np.zeros((n_timesteps, n_features))
-
-def transform_data(sample, scaler, data_buffer, n_timesteps, n_features):
-    # Normalize the sample while keeping it as a DataFrame
-    normalized_sample = pd.DataFrame(scaler.transform(sample), columns=sample.columns)
-    
-    # Update the data buffer
-    data_buffer[:-1] = data_buffer[1:]
-    data_buffer[-1] = normalized_sample.values
-    
-    # Reshape the buffer to be compatible with the LSTM model
-    X = data_buffer.reshape(1, n_timesteps, n_features)
-    
-    return X
-"""
+# Buffer for incoming data
+data_buffer = []
 
 ## Flask App ##
 
 # Define the API endpoint and request method
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
+    global data_buffer  # use the global variable
+
     # Get the incoming data from the request
     data = request.get_json()
 
-    # Convert the data into a DataFrame
-    sample = pd.DataFrame(data, columns=normalize_columns)
+    # Convert the data into a DataFrame and add to the buffer
+    data_buffer.append(pd.DataFrame(data, columns=columns))
 
-    # Transform the data and get the prediction
-    X = transform_data(sample, scaler, data_buffer, n_timesteps, n_features)
-    prediction = model.predict(X, verbose=False)
+    # If we have less than 30 data points, return a message
+    if len(data_buffer) < dp_req:
+        return jsonify({"message": f"Collecting data, {len(data_buffer)} data points collected so far."})
 
-    # Get the class label for the prediction
-    #class_label = encoder.inverse_transform(prediction.argmax(axis=-1))[0]
+    # If we have 30 or more data points, generate a prediction
+    if len(data_buffer) >= dp_req:
+        sample = pd.concat(data_buffer[-dp_req:], ignore_index=True)
+        w1 = WindowGenerator(input_width=input_width, label_width=hif, shift=hif, 
+                             test_df=sample, label_columns=["trips"])
 
-    # Return the prediction as JSON
-    return jsonify({'prediction': class_label})
+        # Generate prediction
+        prediction = model.predict(w1.test, verbose=False)
+
+        # Return the prediction as JSON
+        return jsonify({"Prediction": prediction.tolist()})
 
 # Run the Flask app
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+    
