@@ -35,7 +35,7 @@ def create_kds(motion_sense: List) -> None:
 		)
 
 		counter = counter + 1
-		time.sleep(5)
+		time.sleep(0.1)
 		print('Message sent #' + str(counter))
 
 		if response['ResponseMetadata']['HTTPStatusCode'] != 200:
