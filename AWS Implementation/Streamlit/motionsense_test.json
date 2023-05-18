@@ -1,0 +1,16 @@
+{
+    "attitude.roll": 1.2345,
+    "attitude.pitch": 0.9876,
+    "attitude.yaw": -0.1234,
+    "gravity.x": 0.4567,
+    "gravity.y": -0.7890,
+    "gravity.z": 0.1357,
+    "rotationRate.x": -0.2468,
+    "rotationRate.y": 0.3691,
+    "rotationRate.z": -0.4812,
+    "userAcceleration.x": 0.5923,
+    "userAcceleration.y": -0.7034,
+    "userAcceleration.z": 0.8145,
+    "predcitions": "dws"
+  }
+  
