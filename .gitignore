@@ -7,3 +7,5 @@ keys.txt
 use_cases_env/*
 Data/*
 .venv/*
+
+*.pem
