@@ -6,6 +6,10 @@ dynamodb = boto3.client('dynamodb')
 CONNECTIONS_TABLE = 'websocket-connections'
 
 def lambda_handler(event, context):
+    '''
+    Disconnects from websocket API
+    Deletes current connection id from DynamoDB
+    '''
     connection_id = event['requestContext'].get("connectionId")
     try:
         dynamodb.delete_item(

@@ -6,6 +6,10 @@ dynamodb = boto3.client('dynamodb')
 CONNECTIONS_TABLE = 'websocket-connections'
 
 def lambda_handler(event, context):
+    '''
+    Connects to websocket API
+    Sends current connection id to DynamoDB
+    '''
     connection_id = event['requestContext'].get("connectionId")
     print(connection_id)
     try:
