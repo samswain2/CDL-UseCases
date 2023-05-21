@@ -29,24 +29,49 @@ The project was completed by the following MSiA students at Northwestern Univers
 
 ## IoT Use Cases
 
-
 ### Divvy Bikes
 
 
 ### Hard Drives
 
 
-### Motion Sense
+### MotionSense
 
 
+## AWS Implementation
 
+### Solution Architecture
 
+**Data Sources**
+- [Divvy Bikes](https://divvybikes.com/system-data)
+- Hard Drives
+- MotionSense
 
+**Data Ingestion**
+- Kinesis Data Streams
+    - `divvy-stream`
+    - `harddrive-stream`
+    - `motionsense-stream`
 
+- Amazon S3
+    - `divvy-stream-data`
+    - `harddrive-stream-data`
+    - `motionsense-stream-data`
 
+**Data Preparation**
 
+**Data Storage**
 
-### AWS architecture (WIP)
-[Cost estimate](https://calculator.aws/#/estimate?id=1483578a255cd885954239b93c9ac7045dd915bd)
+**Model Inference**
+
+**Model Retraining**
+
+**Predictions**
 
 <img width="613" alt="image" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/df7f1658-4759-43fe-8698-952d9eda7fb3">
+
+### Solution Cost Estimation
+
+## AWS vs. REFIT: Streaming Solution Comparison
+
+## Final Remarks
