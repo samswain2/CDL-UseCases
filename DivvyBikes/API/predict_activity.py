@@ -9,7 +9,7 @@ from transform_data import WindowGenerator
 app = Flask(__name__)
 
 # Get model path and load model
-model_path = "../Model/Divvy_LSTM.h5"
+model_path = "../Model/DivvyBikes_LSTM.h5"
 model = keras.models.load_model(model_path)
 
 # Column names
