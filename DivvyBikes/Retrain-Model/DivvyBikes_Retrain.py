@@ -76,10 +76,10 @@ s3 = boto3.client(
     's3'
 )
 
-stream_data_bucket = 'motionsense-stream-data'
-retrain_bucket = 'motionsense-retraining'
+stream_data_bucket = 'divvy-stream-data'
+retrain_bucket = 'divvy-retraining'
 
-train_path_key = "training-data/train_motionsense_lstm.csv"
+train_path_key = "training-data/train_divvy_lstm.csv"
 # If you uncomment the line below you'll enable this script to read the new data it
 # writes to an s3 bucket from a previous training job. Right now, the script is
 # getting all streamed data. As of now if you enable that, you'll have duplicate rows
@@ -87,16 +87,24 @@ train_path_key = "training-data/train_motionsense_lstm.csv"
 # the dataframe into a different location before enabling 
 # train_path_key = "training-data/updated_training_data.csv" # Uncommend when able
 
-new_labels_path_key = "training-data/y_retrain_data_motionsense.csv"
+new_labels_path_key = "training-data/y_retrain_data_divvy.csv"
 streamed_data_prefix = "kinesis_data/"
 
 # Define model columns
-feature_columns = [
-    'attitude.roll', 'attitude.pitch', 'attitude.yaw',
-    'gravity.x', 'gravity.y', 'gravity.z',
-    'rotationRate.x', 'rotationRate.y', 'rotationRate.z',
-    'userAcceleration.x', 'userAcceleration.y', 'userAcceleration.z'
-    ]
+feature_columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_temp", 
+                   "precip", "rain", "snow", "cloudcover", "windspeed", 
+                   "60201", "60202", "60208", "60301", "60302", "60304", 
+                   "60601", "60602", "60603", "60604", "60605", "60606", 
+                   "60607", "60608", "60609", "60610", "60611", "60612", 
+                   "60613", "60614", "60615", "60616", "60617", "60618", 
+                   "60619", "60620", "60621", "60622", "60623", "60624", 
+                   "60625", "60626", "60628", "60629", "60630", "60632", 
+                   "60636", "60637", "60638", "60640", "60641", "60642", 
+                   "60643", "60644", "60645", "60646", "60647", "60649", 
+                   "60651", "60653", "60654", "60657", "60659", "60660", 
+                   "60661", "60696", "60804", 
+                   "hours_since_start", "Year sin", "Year cos", 
+                   "Week sin", "Week cos", "Day sin", "Day cos"]
 
 ### ----------------- Import data ----------------- ### 
 
@@ -147,16 +155,16 @@ logging.info('All data loaded')
 
 ### Scale features
 
-# Scale features
-scaler = MinMaxScaler(feature_range=(-1, 1))
-scaler.fit(df_train[feature_columns])
-df_train[feature_columns] = scaler.transform(df_train[feature_columns])
+# # Scale features
+# scaler = MinMaxScaler(feature_range=(-1, 1))
+# scaler.fit(df_train[feature_columns])
+# df_train[feature_columns] = scaler.transform(df_train[feature_columns])
 
-logging.info('Data scaling completed')
+# logging.info('Data scaling completed')
 
-# Save scaler
-scaler_filename = "motionsense_lstm_scalar.save"
-joblib.dump(scaler, scaler_filename)
+# # Save scaler
+# scaler_filename = "motionsense_lstm_scalar.save"
+# joblib.dump(scaler, scaler_filename)
 
 # Upload scaler to S3
 upload_file_to_s3(retrain_bucket, 'training-artifacts/' + scaler_filename, scaler_filename)
@@ -165,41 +173,41 @@ logging.info('Scaler saved and uploaded to S3')
 
 ### Feature variables
 
-# Set data/model attributes
-n_timesteps = 50 # Set length of memory (# of observation model looks back)
-n_categories = 6 # Set number of categories
-n_features = len(feature_columns) # Set number of features
-epochs = 1
-batch_size = 64
-optimizer = 'adam'
-loss = 'categorical_crossentropy'
-metrics = ['accuracy']
+# # Set data/model attributes
+# n_timesteps = 50 # Set length of memory (# of observation model looks back)
+# n_categories = 6 # Set number of categories
+# n_features = len(feature_columns) # Set number of features
+# epochs = 1
+# batch_size = 64
+# optimizer = 'adam'
+# loss = 'categorical_crossentropy'
+# metrics = ['accuracy']
 
-# Convert df to 3D arrays
-array_train_lstm = df_train[feature_columns].values
+# # Convert df to 3D arrays
+# array_train_lstm = df_train[feature_columns].values
 
-# Initialize arrays to store LSTM inputs
-X_train_lstm = np.zeros((array_train_lstm.shape[0], n_timesteps, n_features))
+# # Initialize arrays to store LSTM inputs
+# X_train_lstm = np.zeros((array_train_lstm.shape[0], n_timesteps, n_features))
 
-# Loop through arrays for each set and create LSTM input
-for i in range(n_timesteps, array_train_lstm.shape[0]):
-    X_train_lstm[i-n_timesteps] = array_train_lstm[i-n_timesteps:i]
+# # Loop through arrays for each set and create LSTM input
+# for i in range(n_timesteps, array_train_lstm.shape[0]):
+#     X_train_lstm[i-n_timesteps] = array_train_lstm[i-n_timesteps:i]
 
-logging.info('X_train transformed successfully')
+# logging.info('X_train transformed successfully')
 
-### Dependent variable
+# ### Dependent variable
 
-# Initilize encoder
-encoder = LabelEncoder()
+# # Initilize encoder
+# encoder = LabelEncoder()
 
-# Encode training y data and convert to categorical using one-hot encoding
-encoder.fit(df_train["test_type"])
-y_train_lstm = encoder.transform(df_train["test_type"])
-y_train_lstm = to_categorical(y_train_lstm, num_classes = n_categories)
+# # Encode training y data and convert to categorical using one-hot encoding
+# encoder.fit(df_train["test_type"])
+# y_train_lstm = encoder.transform(df_train["test_type"])
+# y_train_lstm = to_categorical(y_train_lstm, num_classes = n_categories)
 
-# Save label encoder
-encoder_filename = "motionsense_lstm_label_encoder.npy"
-np.save(encoder_filename, encoder.classes_)
+# # Save label encoder
+# encoder_filename = "motionsense_lstm_label_encoder.npy"
+# np.save(encoder_filename, encoder.classes_)
 
 # Upload label encoder to S3
 upload_file_to_s3(retrain_bucket, 'training-artifacts/' + encoder_filename, encoder_filename)
@@ -208,40 +216,40 @@ logging.info("Label encoder saved and uploaded to S3")
 
 ### ----------------- Create/Train/Save model ----------------- ###
 
-# Check if GPU is available
-if tf.config.list_physical_devices('GPU'):
-    logging.info("GPU is available")
-else:
-    logging.info("No GPU found")
+# # Check if GPU is available
+# if tf.config.list_physical_devices('GPU'):
+#     logging.info("GPU is available")
+# else:
+#     logging.info("No GPU found")
 
-# Define model
-def create_model():
+# # Define model
+# def create_model():
 
-    # Initialize a sequential model
-    model = Sequential()
+#     # Initialize a sequential model
+#     model = Sequential()
 
-    # Add a bidirectional LSTM layer to the model
-    model.add(Bidirectional(LSTM(units=16, input_shape=(n_timesteps, n_features))))
+#     # Add a bidirectional LSTM layer to the model
+#     model.add(Bidirectional(LSTM(units=16, input_shape=(n_timesteps, n_features))))
 
-    # Add a dense output layer with 6 units and a softmax activation function
-    model.add(Dense(n_categories, activation='softmax'))
+#     # Add a dense output layer with 6 units and a softmax activation function
+#     model.add(Dense(n_categories, activation='softmax'))
 
-    # Compile the model using the Adam optimizer, categorical crossentropy loss, and accuracy metrics
-    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+#     # Compile the model using the Adam optimizer, categorical crossentropy loss, and accuracy metrics
+#     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
-    return model
+#     return model
 
-model = create_model()
+# model = create_model()
 
-logging.info('Model created')
+# logging.info('Model created')
 
-# Train model
-model.fit(X_train_lstm, y_train_lstm, epochs=epochs, batch_size=batch_size, verbose=1)
+# # Train model
+# model.fit(X_train_lstm, y_train_lstm, epochs=epochs, batch_size=batch_size, verbose=1)
 
-logging.info('Model trained')
+# logging.info('Model trained')
 
 # Save model
-model_filename = "MotionSense_LSTM.h5"
+model_filename = "DivvyBikes_LSTM.h5"
 model.save(model_filename)
 
 # Upload model to S3
