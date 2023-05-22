@@ -72,6 +72,4 @@ The project was completed by the following MSiA students at Northwestern Univers
 
 ### Solution Cost Estimation
 
-## AWS vs. REFIT: Streaming Solution Comparison
-
 ## Final Remarks
