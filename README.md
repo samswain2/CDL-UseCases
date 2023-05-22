@@ -25,12 +25,12 @@ The Center for Deep Learning is developing [REFIT](https://www.mccormick.northwe
 - Supporting Staff - Raman Khurana
 
 ### Credits
-The project was completed by the following MSiA students at Northwestern University: Yi Chen, Henry Liang, Sharika Mahadevan, Ruben Nakano, Riu Sakaguchi, Sam Swain, and Yumeng Zhang. 
+The project was completed by the following MSiA students at Northwestern University: Yi (Betty) Chen, Henry Liang, Sharika Mahadevan, Ruben (Dias) Nakano, Riu Sakaguchi, Sam Swain, and Yumeng (Rena) Zhang. 
 
 ## IoT Use Cases
 
 ### Divvy Bikes
-
+- 
 
 ### Hard Drives
 
