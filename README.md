@@ -42,6 +42,8 @@ The project was completed by the following MSiA students at Northwestern Univers
 
 ### Solution Architecture
 
+<img width="613" alt="image" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/df7f1658-4759-43fe-8698-952d9eda7fb3">
+
 **Data Sources**
 - [Divvy Bikes](https://divvybikes.com/system-data)
 - Hard Drives
@@ -67,8 +69,6 @@ The project was completed by the following MSiA students at Northwestern Univers
 **Model Retraining**
 
 **Predictions**
-
-<img width="613" alt="image" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/df7f1658-4759-43fe-8698-952d9eda7fb3">
 
 ### Solution Cost Estimation
 
