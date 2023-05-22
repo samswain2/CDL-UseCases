@@ -30,13 +30,16 @@ The project was completed by the following MSiA students at Northwestern Univers
 ## IoT Use Cases
 
 ### Divvy Bikes
-- 
+- Brief motivation of the problem at hand
+- Briefly describe the modeling solution
 
 ### Hard Drives
-
+- Brief motivation of the problem at hand
+- Briefly describe the modeling solution
 
 ### MotionSense
-
+- Brief motivation of the problem at hand
+- Briefly describe the modeling solution
 
 ## AWS Implementation
 
@@ -73,3 +76,5 @@ The project was completed by the following MSiA students at Northwestern Univers
 ### Solution Cost Estimation
 
 ## Final Remarks
+- Mention changes to project scope
+- Mention final report for more details on the entire project. 
