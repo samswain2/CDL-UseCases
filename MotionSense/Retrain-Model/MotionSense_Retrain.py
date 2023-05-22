@@ -90,6 +90,8 @@ train_path_key = "training-data/train_motionsense_lstm.csv"
 new_labels_path_key = "training-data/y_retrain_data_motionsense.csv"
 streamed_data_prefix = "kinesis_data/"
 
+ubuntu_home_path = "/home/ubuntu/"
+
 # Define model columns
 feature_columns = [
     'attitude.roll', 'attitude.pitch', 'attitude.yaw',
@@ -156,10 +158,10 @@ logging.info('Data scaling completed')
 
 # Save scaler
 scaler_filename = "motionsense_lstm_scalar.save"
-joblib.dump(scaler, scaler_filename)
+joblib.dump(scaler, ubuntu_home_path + scaler_filename)
 
 # Upload scaler to S3
-upload_file_to_s3(retrain_bucket, 'training-artifacts/' + scaler_filename, scaler_filename)
+upload_file_to_s3(retrain_bucket, 'training-artifacts/' + scaler_filename, ubuntu_home_path + scaler_filename)
 
 logging.info('Scaler saved and uploaded to S3')
 
@@ -199,10 +201,10 @@ y_train_lstm = to_categorical(y_train_lstm, num_classes = n_categories)
 
 # Save label encoder
 encoder_filename = "motionsense_lstm_label_encoder.npy"
-np.save(encoder_filename, encoder.classes_)
+np.save(ubuntu_home_path + encoder_filename, encoder.classes_)
 
 # Upload label encoder to S3
-upload_file_to_s3(retrain_bucket, 'training-artifacts/' + encoder_filename, encoder_filename)
+upload_file_to_s3(retrain_bucket, 'training-artifacts/' + encoder_filename, ubuntu_home_path + encoder_filename)
 
 logging.info("Label encoder saved and uploaded to S3")
 
@@ -242,9 +244,9 @@ logging.info('Model trained')
 
 # Save model
 model_filename = "MotionSense_LSTM.h5"
-model.save(model_filename)
+model.save(ubuntu_home_path + model_filename)
 
 # Upload model to S3
-upload_file_to_s3(retrain_bucket, 'training-artifacts/' + model_filename, model_filename)
+upload_file_to_s3(retrain_bucket, 'training-artifacts/' + model_filename, ubuntu_home_path + model_filename)
 
 logging.info('Model saved and uploaded to S3')
