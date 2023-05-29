@@ -137,7 +137,6 @@ logging.info(df_train["test_type"].unique())
 nan_rows = df_train[df_train['test_type'].isna()]
 print(nan_rows)
 
-
 # Put the CSV data to the S3 bucket
 s3.put_object(Bucket=retrain_bucket, Key='training-data/updated_training_data.csv', Body=csv_buffer.getvalue())
 
