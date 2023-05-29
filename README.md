@@ -4,6 +4,9 @@ This repository contains the implementation of three IoT use cases on AWS togeth
 https://github.com/samswain2/CDL-UseCases/blob/main/Misc/flowchart.png?raw=true![image](https://github.com/samswain2/CDL-UseCases/assets/113140351/1e6148dc-9c1a-4e94-a1ea-d52e5dcac4dc)
 
 
+https://user-images.githubusercontent.com/113140351/239002237-df7f1658-4759-43fe-8698-952d9eda7fb3.png![image](https://github.com/samswain2/CDL-UseCases/assets/113140351/b29ff8bd-f7b8-45d1-850e-78381dbc450f)
+
+
 ## Overview
 
 ### Center for Deep Learning
