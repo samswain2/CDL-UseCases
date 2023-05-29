@@ -60,13 +60,18 @@ def predict():
     # Get the incoming data from the request
     data = request.get_json()
     data_dict = data[0]
-    
+    data_dict = json.loads(data)[0]
+    # print('dict_len', len(data_dict))
+    # data1 = data_dict
 
     data1 = {col: data_dict[col] for col in column_name}
+    data1['trips'] = int(data1['trips'])
 
     # Convert the data into a DataFrame and add to the buffer
-    data_buffer = pd.concat([data_buffer, pd.DataFrame(data1, columns=column_name, index=[0])])
+    data_buffer = pd.concat([data_buffer, pd.DataFrame(data1, columns=column_name, index=[0])]).dropna()
     # print(data_buffer)
+    # print(data_buffer)
+    # print()
     print(len(data_buffer))
     # If we have less than 30 data points, return a message
     if len(data_buffer) < dp_req:
@@ -77,11 +82,15 @@ def predict():
         w1 = WindowGenerator(input_width=input_width, label_width=hif, shift=hif, train_df=train_df, val_df=val_df,
                              test_df=sample, label_columns=["trips"])
 
-        
-
+        # with open('f.txt', 'a') as the_file:
+        #     the_file.write(sample)
+        #     the_file.write('\n')
+        # sample.to_csv('sample.csv')
+        # print(sample.columns)
+        # print(sample)
         # Generate prediction
-        prediction = model.predict(w1.test, verbose=False)[:, :, 0][0]
-        # print(prediction)
+        prediction = model.predict(w1.test, verbose=False)[:,:,0][0]
+        print(prediction)
 
         # Return the prediction as JSON
         return jsonify({"Prediction": prediction.tolist()})

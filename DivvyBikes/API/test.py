@@ -28,14 +28,13 @@ validation_data = validation_data[api_columns]
 api_url = "http://18.189.119.248:5000/predict"
 
 # Num rows to test
-num_test_rows = 1200
+num_test_rows = 800
 
 # Loop through the validation dataset and send requests to the API
 results = []
 for idx, row in validation_data.iloc[0:num_test_rows, :].iterrows():
     # Convert the row to a dictionary
     data = [row.to_dict()]
-    
     # Send a POST request to the API with the data
     response = requests.post(api_url, json=data)
     # Parse the JSON response and store the prediction
