@@ -57,11 +57,6 @@ The MotionSense data originates from an experiment involving 24 participants per
     - `harddrive-stream`
     - `motionsense-stream`
 
-- Amazon S3
-    - `divvy-stream-data`
-    - `harddrive-stream-data`
-    - `motionsense-stream-data`
-
 **Data Preparation**
 - AWS Glue
     - `divvy_static_etl`
@@ -70,38 +65,78 @@ The MotionSense data originates from an experiment involving 24 participants per
 
 
 **Data Storage**
+- AWS Lambda
+    - `transform_and_stream_to_S3` (Divvy Bikes)
+    - `motionsense-streamtoS3`
+    - `harddrive-streamtoS3`
+
+- Amazon S3 (stores raw streaming data)
+    - `divvy-stream-data`
+    - `harddrive-stream-data`
+    - `motionsense-stream-data`
+
+
+**Model Inference**
+- Amazon EC2 (hosts model endpoint)
+    - `divvy_api`
+    - `harddrive_api`
+    - `motionsense_api`
+
+- AWS Lambda (calls model API and sends prediction to WebSocket)
+    - `divvybikes-getprediction-send2websocket`
+    - `lambda-getprediction-send2websocket` (Motion Sense)
+    - `harddrive-getprediction-send2websocket`
+
+- AWS Lambda (calls model API and saves prediction to S3)
+    - `divvybikes-getprediction-savetoS3`
+    - `motionsense-getprediction-savetoS3`
+    - `harddrive-getprediction-savetoS3`
+
+- Amazon S3
+    - `divvy-predictions`
+    - `harddrive-predictions`
+    - `motionsense-predictions`
+
+**Display predictions**
+- Amazon EventBridge
+
+- AWS Lambda 
+    - 
+
+- WebSocket
+    - `websocket-1`
+
+- DynamoDB
+    - `websocket-connections`
+    - `websocket-connections-divvybikes`
+    - `websocket-connections-harddrive`
+
+**Model Retraining**
 - Amazon S3
     - `divvy-retraining`
     - `harddrive-retraining`
     - `motionsense-retraining`
 
-- AWS Lambda
-
-**Model Inference**
-- AWS Lambda
-- Amazon EC2
-    - `divvy_api`
-    - `harddrive_api`
-    - `motionsense_api`
-- Amazon S3
-
-**Predictions**
-- Amazon S3
-    - `divvy-predictions`
-    - `harddrive-predictions`
-    - `motionsense-predictions`
-- Amazon EventBridge
-- Amazon SQS
-- AWS Lambda
-- WebSocket
-    - `websocket-1`
-
-**Model Retraining**
 - Amazon EventBridge
 - AWS Lambda
     - `trigger-motionsense-retrain`
+    - `trigger-harddrive-retrain`
+    - `trigger-divvy-retrain`
+
+    - `stop-motionsense-retrain`
+    - `trigger-motionsense-retrain`
+
+    - `stop-harddrive-retrain`
+    - `trigger-harddrive-retrain`
+    
+    - `stop-divvy-retrain`
+    - `trigger-divvy-retrain`
+
 - Amazon EC2
     - `motionsense_retrain`
+    - `divvy_retrain`
+    - `harddrive_retrain`
+
 
 ### Solution Cost Estimation
 The combined cost of the end-to-end AWS solution for the three use cases is estimated reach an **annual total of $3,207.22 USD** or equivalently, **$267.27 USD per month.** [Amazon API Gateway](https://aws.amazon.com/api-gateway/) and [AWS Glue](https://aws.amazon.com/glue/) are two of the more costly AWS services employed as part of the comprehensive solution. A detailed break down of the cost estimate by service can be found [here.](https://calculator.aws/#/estimate?id=1af19374e566120b06e9ec56d5f4bd66c7c329d3)
