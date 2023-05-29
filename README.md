@@ -97,11 +97,10 @@ The MotionSense data originates from an experiment involving 24 participants per
     - `harddrive-predictions`
     - `motionsense-predictions`
 
-**Display predictions**
+**Display Predictions**
 - Amazon EventBridge
 
 - AWS Lambda 
-    - 
 
 - WebSocket
     - `websocket-1`
