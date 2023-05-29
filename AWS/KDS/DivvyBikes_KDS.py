@@ -13,7 +13,7 @@ def reading_csv(file_location: str) -> List:
 		csvReader = csv.DictReader(csvf)
 		for rows in csvReader:
 			Divvy.append(rows)
-			if count == 12:
+			if count == 800:
 				break
 			count+=1
 
@@ -43,7 +43,7 @@ def create_kds(divvy: List) -> None:
 			print(response)
 
 if __name__ == '__main__':
-	file_location = 'streamed.csv'
+	file_location = 'final_streamed.csv'
 	file_contents = reading_csv(file_location)
 
 	create_kds(file_contents)
