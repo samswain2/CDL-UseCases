@@ -6,3 +6,4 @@ __pycache__/
 use_cases_env/*
 Data/*
 .venv/*
+*.pem
