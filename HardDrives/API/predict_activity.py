@@ -30,6 +30,10 @@ column_names = ["capacity_bytes",	"smart_1_normalized",\
 def predict():
     # Get the incoming data from the request
     data = request.get_json()
+    print(data[0]['date'])
+    print(data[0]['model'])
+    print(data[0]['serial_number'])
+    print()
     data1 = {col: data[0][col] for col in column_names}
     data2 = {i: int(data1[i]) for i in list(data1.keys())}
 
@@ -40,7 +44,7 @@ def predict():
     prediction = xgb_model_loaded.predict(sample)
 
     # Return the prediction as JSON
-    return jsonify({'prediction': str(prediction[0])})
+    return jsonify({'date': data[0]['date'], 'model': data[0]['model'], 'serial_number':data[0]['serial_number'], 'prediction': str(prediction[0])})
 
 # Run the Flask app
 if __name__ == '__main__':
