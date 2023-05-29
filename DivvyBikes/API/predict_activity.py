@@ -3,7 +3,8 @@ import keras
 import pandas as pd
 from flask import Flask, request, jsonify
 import json
-
+import boto3
+import io
 from transform_data import WindowGenerator
 
 # Create Flask app instance
@@ -12,6 +13,18 @@ app = Flask(__name__)
 # Get model path and load model
 model_path = "DivvyBikes_LSTM.h5"
 model = keras.models.load_model(model_path)
+
+# # Janky workaround
+# s3 = boto3.client('s3')
+# obj = s3.get_object(Bucket='divvy-retraining', Key = 'train_df.csv')
+# train_df = pd.read_csv(io.BytesIO(obj['Body'].read())).drop("Unnamed: 0", axis = 1)
+
+# obj = s3.get_object(Bucket='divvy-retraining', Key = 'val_df.csv')
+# val_df = pd.read_csv(io.BytesIO(obj['Body'].read())).drop("Unnamed: 0", axis = 1)
+
+train_df = pd.read_csv('train_df.csv')
+val_df = pd.read_csv('val_df.csv')
+
 
 # Column names
 column_name = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_temp", 
@@ -32,10 +45,10 @@ column_name = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "appare
 # Define variables
 hif = 24
 input_width = 30*24
-dp_req = 30
+dp_req = 745
 
 # Buffer for incoming data
-data_buffer = []
+data_buffer = pd.DataFrame()
 
 ## Flask App ##
 
@@ -46,30 +59,29 @@ def predict():
 
     # Get the incoming data from the request
     data = request.get_json()
-    #print(data)
-    data_list = json.loads(data)
-    data_dict = data_list[0]
+    data_dict = data[0]
+    
 
     data1 = {col: data_dict[col] for col in column_name}
 
     # Convert the data into a DataFrame and add to the buffer
-    data_buffer.append(pd.DataFrame(data1, columns=column_name, index=[0]))
-
+    data_buffer = pd.concat([data_buffer, pd.DataFrame(data1, columns=column_name, index=[0])])
+    # print(data_buffer)
+    print(len(data_buffer))
     # If we have less than 30 data points, return a message
     if len(data_buffer) < dp_req:
         return jsonify({"message": f"Collecting data, {len(data_buffer)} data points collected so far."})
-
     # If we have 30 or more data points, generate a prediction
     if len(data_buffer) >= dp_req:
-        sample = pd.concat(data_buffer[-dp_req:], ignore_index=True)
-        w1 = WindowGenerator(input_width=input_width, label_width=hif, shift=hif, 
+        sample = data_buffer.iloc[-dp_req:]
+        w1 = WindowGenerator(input_width=input_width, label_width=hif, shift=hif, train_df=train_df, val_df=val_df,
                              test_df=sample, label_columns=["trips"])
+
         
-        print(w1)
 
         # Generate prediction
-        prediction = model.predict(w1.test, verbose=False)
-        print(prediction)
+        prediction = model.predict(w1.test, verbose=False)[:, :, 0][0]
+        # print(prediction)
 
         # Return the prediction as JSON
         return jsonify({"Prediction": prediction.tolist()})
