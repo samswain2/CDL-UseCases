@@ -32,8 +32,7 @@ The project was completed by the following MSiA students at Northwestern Univers
 ## IoT Use Cases
 
 ### Divvy Bikes
-- Brief motivation of the problem at hand
-- Briefly describe the modeling solution
+A Chicago-based bike share system, Divvy Bikes provides an affordable and convenient mode of transportation throughout cities. The raw dataset provided publicly by Divvy contains information at the trip level, including the starting and ending station and time. The business objective revolves around predicting the number of trips at various stations for the next hour to facilitate resourceful restocking of bikes. The Divvy Bikes use case leverages an LSTM model to account for long-term seasonal dependencies to predict demand.
 
 ### Hard Drives
 - Brief motivation of the problem at hand
