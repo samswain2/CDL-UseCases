@@ -27,7 +27,7 @@ The Center for Deep Learning is developing [REFIT](https://www.mccormick.northwe
 - Supporting Staff - Raman Khurana
 
 ### Credits
-The project was completed by the following MSiA students at Northwestern University: Yi (Betty) Chen, Henry Liang, Sharika Mahadevan, Ruben (Dias) Nakano, Riu Sakaguchi, Sam Swain, and Yumeng (Rena) Zhang. 
+The project was completed by the following MSiA students at Northwestern University: Yi (Betty) Chen, Henry Liang, Sharika Mahadevan, Ruben Nakano, Riu Sakaguchi, Sam Swain, and Yumeng (Rena) Zhang. 
 
 ## IoT Use Cases
 
@@ -107,9 +107,7 @@ The project was completed by the following MSiA students at Northwestern Univers
     - `motionsense_retrain`
 
 ### Solution Cost Estimation
-
-
-
+The combined cost of the end-to-end AWS solution for the three use cases is estimated reach an **annual total of $3,207.22 USD** or equivalently, **$267.27 USD per month.** [Amazon API Gateway](https://aws.amazon.com/api-gateway/) and [AWS Glue](https://aws.amazon.com/glue/) are two of the more costly AWS services employed as part of the comprehensive solution. A detailed break down of the cost estimate by service can be found [here.](https://calculator.aws/#/estimate?id=1af19374e566120b06e9ec56d5f4bd66c7c329d3)
 
 ## Final Remarks
 - Mention changes to project scope
