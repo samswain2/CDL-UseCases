@@ -49,8 +49,8 @@ The project was completed by the following MSiA students at Northwestern Univers
 
 **Data Sources**
 - [Divvy Bikes](https://divvybikes.com/system-data)
-- Hard Drives
-- MotionSense
+- [Hard Drives](https://www.backblaze.com/b2/hard-drive-test-data.html)
+- [MotionSense](https://github.com/mmalekzadeh/motion-sense)
 
 **Data Ingestion**
 - Kinesis Data Streams
@@ -64,14 +64,45 @@ The project was completed by the following MSiA students at Northwestern Univers
     - `motionsense-stream-data`
 
 **Data Preparation**
+- AWS Glue
+    - `divvy_static_etl`
+
+- AWS Lambda
+
 
 **Data Storage**
+- Amazon S3
+    - `divvy-retraining`
+    - `harddrive-retraining`
+    - `motionsense-retraining`
+
+- AWS Lambda
 
 **Model Inference**
-
-**Model Retraining**
+- AWS Lambda
+- Amazon EC2
+    - `divvy_api`
+    - `harddrive_api`
+    - `motionsense_api`
+- Amazon S3
 
 **Predictions**
+- Amazon S3
+    - `divvy-predictions`
+    - `harddrive-predictions`
+    - `motionsense-predictions`
+- Amazon EventBridge
+- Amazon SQS
+- AWS Lambda
+- WebSocket
+    - `websocket-1`
+
+**Model Retraining**
+- Amazon EventBridge
+- AWS Lambda
+    - `trigger-motionsense-retrain`
+- Amazon EC2
+    - `motionsense_retrain`
 
 ### Solution Cost Estimation
 
