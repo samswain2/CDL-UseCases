@@ -13,7 +13,7 @@ def reading_csv(file_location: str) -> List:
 		csvReader = csv.DictReader(csvf)
 		for rows in csvReader:
 			HardDrive.append(rows)
-			if count == 12:
+			if count == 9:
 				break
 			count+=1
 
@@ -43,7 +43,8 @@ def create_kds(hard_drive: List) -> None:
 			print(response)
 
 if __name__ == '__main__':
-	file_location = 'harddrive.csv'
+	file_location = 'harddrive_stream.csv'
 	file_contents = reading_csv(file_location)
 
 	create_kds(file_contents)
+
