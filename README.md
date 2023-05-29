@@ -44,7 +44,7 @@ The MotionSense data originates from an experiment involving 24 participants per
 
 ### Solution Architecture
 
-<img width="613" alt="image" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/df7f1658-4759-43fe-8698-952d9eda7fb3">
+<img width="707" alt="image" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/f81a4285-f5d2-4246-aa70-0ee453f6021a">
 
 **Data Sources**
 - [Divvy Bikes](https://divvybikes.com/system-data)
