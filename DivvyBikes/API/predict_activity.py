@@ -15,15 +15,15 @@ model_path = "DivvyBikes_LSTM.h5"
 model = keras.models.load_model(model_path)
 
 # # Janky workaround
-# s3 = boto3.client('s3')
-# obj = s3.get_object(Bucket='divvy-retraining', Key = 'train_df.csv')
-# train_df = pd.read_csv(io.BytesIO(obj['Body'].read())).drop("Unnamed: 0", axis = 1)
+s3 = boto3.client('s3')
+obj = s3.get_object(Bucket='divvy-retraining', Key = 'train_df.csv')
+train_df = pd.read_csv(io.BytesIO(obj['Body'].read())).drop("Unnamed: 0", axis = 1)
 
-# obj = s3.get_object(Bucket='divvy-retraining', Key = 'val_df.csv')
-# val_df = pd.read_csv(io.BytesIO(obj['Body'].read())).drop("Unnamed: 0", axis = 1)
+obj = s3.get_object(Bucket='divvy-retraining', Key = 'val_df.csv')
+val_df = pd.read_csv(io.BytesIO(obj['Body'].read())).drop("Unnamed: 0", axis = 1)
 
-train_df = pd.read_csv('train_df.csv')
-val_df = pd.read_csv('val_df.csv')
+#train_df = pd.read_csv('train_df.csv')
+#val_df = pd.read_csv('val_df.csv')
 
 
 # Column names
