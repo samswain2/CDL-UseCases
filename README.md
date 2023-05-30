@@ -143,4 +143,4 @@ The combined cost of the end-to-end AWS solution for the three use cases is esti
 ## Final Remarks
 The final scope and objectives of the project has transitioned slightly from the original proposal including the implementation of the three use cases on REFIT and designing a model agnostic feature selection algorithm for time series data. These works could serve as potential avenues for consideration for future projects with CDL. 
 
-Finally, the ***final report*** detailing the entire 8 month project can be found in `/Deliverables` directory. 
+Finally, the ***final report*** detailing the entire 8 month project can be found inside the `/Deliverables` directory. 
