@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 from keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+import matplotlib.pyplot as plt
 
 # Modeling
 import tensorflow as tf
@@ -20,77 +21,59 @@ from keras.layers import LSTM, Dense, Bidirectional
 
 # Logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s')
-
 logging.info('Imports completed')
 
 ### ----------------- Functions ----------------- ###
 
-def get_new_data_from_s3(bucket_name, s3_prefix):
+class S3Handler:
+    def __init__(self):
+        self.s3 = boto3.client('s3')
 
-    # Initialize an empty DataFrame to store the new data
-    new_data = pd.DataFrame()
+    def get_new_data_from_s3(self, bucket_name, s3_prefix):
+        new_data = pd.DataFrame()
+        response = self.s3.list_objects_v2(Bucket=bucket_name, Prefix=s3_prefix)
 
-    # List all files in the bucket with the specified prefix
-    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=s3_prefix)
+        if 'Contents' not in response:
+            return new_data
 
-    # Check if the bucket contains any objects
-    if 'Contents' not in response:
+        for file in response['Contents']:
+            file_name = file['Key']
+            if file_name.endswith('.json'):
+                tmp_file_path = os.path.join(tempfile.gettempdir(), 'tmp.json')
+                self.s3.download_file(bucket_name, file_name, tmp_file_path)
+
+                with open(tmp_file_path) as f:
+                    data = json.load(f)
+
+                df = pd.DataFrame(data) if isinstance(data, list) else pd.DataFrame([data])
+                new_data = pd.concat([new_data, df], ignore_index=True)
+
         return new_data
 
-    # Loop through each file
-    for file in response['Contents']:
-        # Get the file name
-        file_name = file['Key']
+    def download_file_from_s3(self, bucket_name, file_key, tmp_file_path):
+        self.s3.download_file(bucket_name, file_key, tmp_file_path)
 
-        # Check if the file is a JSON file
-        if file_name.endswith('.json'):
-            # Download the file to a temporary location
-            tmp_file_path = os.path.join(tempfile.gettempdir(), 'tmp.json')
-            s3.download_file(bucket_name, file_name, tmp_file_path)
+    def upload_file_to_s3(self, bucket_name, file_key, file_path):
+        self.s3.upload_file(file_path, bucket_name, file_key)
 
-            # Load the JSON file into a DataFrame
-            df = pd.read_json(tmp_file_path, lines=True)
-
-            # Append the DataFrame to the new data
-            new_data = pd.concat([new_data, df], ignore_index=True)
-
-    # Return the new data
-    return new_data
-
-def download_file_from_s3(bucket_name, file_key, tmp_file_path):
-    s3.download_file(bucket_name, file_key, tmp_file_path)
-
-def upload_file_to_s3(bucket_name, file_key, file_path):
-    s3.upload_file(file_path, bucket_name, file_key)
-
-def read_csv_from_s3(bucket_name, file_key):
-    tmp_file_path = os.path.join(tempfile.gettempdir(), 'tmp.csv')
-    download_file_from_s3(bucket_name, file_key, tmp_file_path)
-    return pd.read_csv(tmp_file_path)
+    def read_csv_from_s3(self, bucket_name, file_key):
+        tmp_file_path = os.path.join(tempfile.gettempdir(), 'tmp.csv')
+        self.download_file_from_s3(bucket_name, file_key, tmp_file_path)
+        return pd.read_csv(tmp_file_path)
 
 
 ### ----------------- Settings ----------------- ###
 
-# Initialize a boto3 client & buckets
-s3 = boto3.client(
-    's3'
-)
+handler = S3Handler()
 
 stream_data_bucket = 'divvy-stream-data'
 retrain_bucket = 'divvy-retraining'
-
-train_path_key = "training-data/train_divvy_lstm.csv"
-# If you uncomment the line below you'll enable this script to read the new data it
-# writes to an s3 bucket from a previous training job. Right now, the script is
-# getting all streamed data. As of now if you enable that, you'll have duplicate rows
-# so please impliment a funciton that moves the streamed data used for updating
-# the dataframe into a different location before enabling 
-# train_path_key = "training-data/updated_training_data.csv" # Uncommend when able
-
-new_labels_path_key = "training-data/y_retrain_data_divvy.csv"
+train_path_key = "train_df.csv"
 streamed_data_prefix = "kinesis_data/"
+ubuntu_home_path = "/home/ubuntu/"
 
-# Define model columns
+logging.info("Set Keys")
+
 feature_columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_temp", 
                    "precip", "rain", "snow", "cloudcover", "windspeed", 
                    "60201", "60202", "60208", "60301", "60302", "60304", 
@@ -109,28 +92,23 @@ feature_columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "ap
 ### ----------------- Import data ----------------- ### 
 
 # Read current training data
-df_train = read_csv_from_s3(retrain_bucket, train_path_key)
+df_train = handler.read_csv_from_s3(retrain_bucket, train_path_key)
 
 logging.info("Retrieved old data successfully")
 
-# Read labels from local file
-labels = read_csv_from_s3(retrain_bucket, new_labels_path_key)
-
-logging.info("Retrieved new labels successfully")
-
 # Get new training features
-new_data = get_new_data_from_s3(stream_data_bucket, streamed_data_prefix)
-
-print(new_data)
+new_data = handler.get_new_data_from_s3(stream_data_bucket, streamed_data_prefix)
 
 logging.info("Retrieved new data successfully")
 
 # Make sure that the new data and the labels have the same order
-new_data = new_data.sort_values('time_series_data')
-new_data = new_data[feature_columns]
+new_data = new_data.sort_values('id')
+logging.info("new_data shape: %s", new_data.shape)
 
-# Add the labels to the new data
-new_data['test_type'] = labels['test_type']
+# Note that labels are now retrieved from the new_data dataframe
+labels = new_data["trips"].tolist()
+
+logging.info("Retrieved new labels successfully")
 
 # Concat old and new training data
 df_train = pd.concat([df_train, new_data], ignore_index=True)
@@ -139,13 +117,12 @@ df_train = pd.concat([df_train, new_data], ignore_index=True)
 csv_buffer = StringIO()
 df_train.to_csv(csv_buffer, index=False)
 
-logging.info(df_train["test_type"].unique())
-nan_rows = df_train[df_train['test_type'].isna()]
-print(nan_rows)
-
+# logging.info(df_train["trips"].unique())
+nan_rows = df_train[df_train['trips'].isna()]
+logging.info("nan_rows shape: %s", nan_rows.shape[0])
 
 # Put the CSV data to the S3 bucket
-s3.put_object(Bucket=retrain_bucket, Key='training-data/updated_training_data.csv', Body=csv_buffer.getvalue())
+handler.s3.put_object(Bucket=retrain_bucket, Key='training-data/updated_training_data.csv', Body=csv_buffer.getvalue())
 
 logging.info("Saved updated dataframe to S3 bucket")
 
@@ -153,106 +130,226 @@ logging.info('All data loaded')
 
 ### ----------------- Transform data ----------------- ###
 
-### Scale features
+df_train = df_train[feature_columns]
+logging.info("df_train shape: %s", df_train.shape[0])
 
-# # Scale features
-# scaler = MinMaxScaler(feature_range=(-1, 1))
-# scaler.fit(df_train[feature_columns])
-# df_train[feature_columns] = scaler.transform(df_train[feature_columns])
+# Get the column indices
+column_indices = {name: i for i, name in enumerate(df_train.columns)}
 
-# logging.info('Data scaling completed')
+num_features = df_train.shape[1]
 
-# # Save scaler
-# scaler_filename = "motionsense_lstm_scalar.save"
-# joblib.dump(scaler, scaler_filename)
+# logging.info(df_train.head())
 
-# Upload scaler to S3
-upload_file_to_s3(retrain_bucket, 'training-artifacts/' + scaler_filename, scaler_filename)
+### Create windows
 
-logging.info('Scaler saved and uploaded to S3')
+class WindowGenerator():
+    '''
+    - Input width: length of given history (i.e. length in time of training data)
+    - Shift: make prediction n units of time in the future
+    - Label width: # of predictions made in the future
 
-### Feature variables
+    total_window_size, input_indicies, label_indices are attributes of WindowGenerator object
+    '''
 
-# # Set data/model attributes
-# n_timesteps = 50 # Set length of memory (# of observation model looks back)
-# n_categories = 6 # Set number of categories
-# n_features = len(feature_columns) # Set number of features
-# epochs = 1
-# batch_size = 64
-# optimizer = 'adam'
-# loss = 'categorical_crossentropy'
-# metrics = ['accuracy']
+    def __init__(self, input_width, label_width, shift,
+                train_df=df_train, label_columns=None):
+        # Store the raw data.
+        self.train_df = train_df
+        self.val_df = train_df
+        self.test_df = train_df
 
-# # Convert df to 3D arrays
-# array_train_lstm = df_train[feature_columns].values
+        # Work out the label column indices.
+        self.label_columns = label_columns
+        if label_columns is not None:
+            self.label_columns_indices = {name: i for i, name in
+                                            enumerate(label_columns)}
+        self.column_indices = {name: i for i, name in
+                            enumerate(train_df.columns)}
 
-# # Initialize arrays to store LSTM inputs
-# X_train_lstm = np.zeros((array_train_lstm.shape[0], n_timesteps, n_features))
+        # Work out the window parameters.
+        self.input_width = input_width
+        self.label_width = label_width
+        self.shift = shift
 
-# # Loop through arrays for each set and create LSTM input
-# for i in range(n_timesteps, array_train_lstm.shape[0]):
-#     X_train_lstm[i-n_timesteps] = array_train_lstm[i-n_timesteps:i]
+        self.total_window_size = input_width + shift
 
-# logging.info('X_train transformed successfully')
+        self.input_slice = slice(0, input_width)
+        self.input_indices = np.arange(self.total_window_size)[self.input_slice]
 
-# ### Dependent variable
+        self.label_start = self.total_window_size - self.label_width
+        self.labels_slice = slice(self.label_start, None)
+        self.label_indices = np.arange(self.total_window_size)[self.labels_slice]
 
-# # Initilize encoder
-# encoder = LabelEncoder()
+    def __repr__(self):
+        return '\n'.join([
+            f'Total window size: {self.total_window_size}',
+            f'Input indices: {self.input_indices}',
+            f'Label indices: {self.label_indices}',
+            f'Label column name(s): {self.label_columns}'])
 
-# # Encode training y data and convert to categorical using one-hot encoding
-# encoder.fit(df_train["test_type"])
-# y_train_lstm = encoder.transform(df_train["test_type"])
-# y_train_lstm = to_categorical(y_train_lstm, num_classes = n_categories)
+def plot(self, model=None, plot_col='trip_count', max_subplots=3, plot_title=None):
+    ''' 
+    Plots inputs, labels, predictions
+    '''
+    inputs, labels = self.example
+    plt.figure(figsize=(12, 8))
+    
+    plot_col_index = self.column_indices[plot_col]
+    max_n = min(max_subplots, len(inputs))
+    for n in range(max_n):
+        if n == 0 and plot_title is not None:
+            plt.title(plot_title)
+        plt.subplot(max_n, 1, n+1)
+        plt.ylabel(f'{plot_col} [normed]')
+        plt.plot(self.input_indices, inputs[n, :, plot_col_index],
+                label='Inputs', marker='.', zorder=-10)
 
-# # Save label encoder
-# encoder_filename = "motionsense_lstm_label_encoder.npy"
-# np.save(encoder_filename, encoder.classes_)
+        if self.label_columns:
+            label_col_index = self.label_columns_indices.get(plot_col, None)
+        else:
+            label_col_index = plot_col_index
 
-# Upload label encoder to S3
-upload_file_to_s3(retrain_bucket, 'training-artifacts/' + encoder_filename, encoder_filename)
+        if label_col_index is None:
+            continue
 
-logging.info("Label encoder saved and uploaded to S3")
+        plt.scatter(self.label_indices, labels[n, :, label_col_index],
+                    edgecolors='k', label='Labels', c='#2ca02c', s=64)
+        if model is not None:
+            predictions = model(inputs)
+            plt.scatter(self.label_indices, predictions[n, :, label_col_index],
+                        marker='X', edgecolors='k', label='Predictions',
+                        c='#ff7f0e', s=64)
+
+        if n == 0:
+            plt.legend()
+    
+    plt.xlabel('Day')
+
+WindowGenerator.plot = plot
+
+def split_window(self, features):
+    '''
+    Converts total window into a window of inputs and a window of labels
+    '''
+    inputs = features[:, self.input_slice, :]
+    labels = features[:, self.labels_slice, :]
+    if self.label_columns is not None:
+        labels = tf.stack(
+            [labels[:, :, self.column_indices[name]] for name in self.label_columns],
+            axis=-1)
+
+    # Slicing doesn't preserve static shape information, so set the shapes
+    # manually. This way the `tf.data.Datasets` are easier to inspect.
+    inputs.set_shape([None, self.input_width, None])
+    labels.set_shape([None, self.label_width, None])
+
+    return inputs, labels
+
+WindowGenerator.split_window = split_window
+
+def make_dataset(self, data):
+    ''' 
+    Takes time series dataset and turns it into tf.data.Dataset of (input_window, label_window)
+    '''
+    data = np.array(data, dtype=np.float32)
+    ds = tf.keras.utils.timeseries_dataset_from_array(
+        data=data,
+        targets=None,
+        sequence_length=self.total_window_size,
+        sequence_stride=1,
+        shuffle=False,
+        batch_size=256,)
+
+    ds = ds.map(self.split_window)
+
+    return ds
+
+WindowGenerator.make_dataset = make_dataset
+
+@property
+def train(self):
+  return self.make_dataset(self.train_df)
+
+@property
+def example(self):
+  """Get and cache an example batch of `inputs, labels` for plotting."""
+  result = getattr(self, '_example', None)
+  if result is None:
+    # No example batch was found, so get one from the `.train` dataset
+    result = next(iter(self.train))
+    # And cache it for next time
+    self._example = result
+  return result
+
+WindowGenerator.train = train
+
+# takes 30 days of data, forecasts next 24 hours.
+hours_into_future = 24
+w1 = WindowGenerator(input_width=30*24, label_width=hours_into_future, shift=hours_into_future,
+                     label_columns=['trips'], train_df=df_train)
 
 ### ----------------- Create/Train/Save model ----------------- ###
 
-# # Check if GPU is available
-# if tf.config.list_physical_devices('GPU'):
-#     logging.info("GPU is available")
-# else:
-#     logging.info("No GPU found")
+class TensorFlowModel:
+    def __init__(self):
+        self.gpu_check()
+        self.model = self.build_model()
+        
+    @staticmethod
+    def gpu_check():
+        if tf.config.list_physical_devices('GPU'):
+            logging.info("GPU is available")
+        else:
+            logging.info("No GPU found")
 
-# # Define model
-# def create_model():
+    @staticmethod
+    def build_model(hours_into_future=1, num_features=1):
+        # Define model
+        OUT_STEPS = hours_into_future
 
-#     # Initialize a sequential model
-#     model = Sequential()
+        multi_lstm_model = tf.keras.Sequential([
+            # Shape [batch, time, features] => [batch, lstm_units].
+            # Adding more `lstm_units` just overfits more quickly.
+            tf.keras.layers.LSTM(32, return_sequences=False),
+            tf.keras.layers.Dropout(0.2),
+            # Shape => [batch, out_steps*features].
+            tf.keras.layers.Dense(OUT_STEPS*num_features,
+                                  kernel_initializer=tf.initializers.zeros()),
+            tf.keras.layers.Reshape([OUT_STEPS, num_features])
+            # Shape => [batch, out_steps, features].
+        ])
 
-#     # Add a bidirectional LSTM layer to the model
-#     model.add(Bidirectional(LSTM(units=16, input_shape=(n_timesteps, n_features))))
+        logging.info('Model created')
 
-#     # Add a dense output layer with 6 units and a softmax activation function
-#     model.add(Dense(n_categories, activation='softmax'))
+        return multi_lstm_model
 
-#     # Compile the model using the Adam optimizer, categorical crossentropy loss, and accuracy metrics
-#     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    @staticmethod
+    def compile_and_fit(model, window, patience=2, MAX_EPOCHS=1):
+        early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss',
+                                                            patience=patience,
+                                                            mode='min')
 
-#     return model
+        model.compile(loss=tf.keras.losses.MeanSquaredError(),
+                        optimizer=tf.keras.optimizers.Adam(learning_rate=0.005),
+                        metrics=[tf.keras.metrics.MeanAbsoluteError()])
 
-# model = create_model()
+        history = model.fit(window.train, epochs=MAX_EPOCHS, callbacks=[early_stopping], verbose=1)
+        
+        return history
 
-# logging.info('Model created')
+    def train_and_save(self, window, model_filename, s3_handler, retrain_bucket):
+        # Train model
+        history = self.compile_and_fit(self.model, window)
 
-# # Train model
-# model.fit(X_train_lstm, y_train_lstm, epochs=epochs, batch_size=batch_size, verbose=1)
+        logging.info('Model trained')
 
-# logging.info('Model trained')
+        # Save model
+        self.model.save(model_filename)
 
-# Save model
-model_filename = "DivvyBikes_LSTM.h5"
-model.save(model_filename)
+        # Upload model to S3
+        s3_handler.upload_file_to_s3(retrain_bucket, 'training-artifacts/' + model_filename, model_filename)
 
-# Upload model to S3
-upload_file_to_s3(retrain_bucket, 'training-artifacts/' + model_filename, model_filename)
+        logging.info('Model saved and uploaded to S3')
 
-logging.info('Model saved and uploaded to S3')
+model = TensorFlowModel()
+model.train_and_save(w1, ubuntu_home_path + "DivvyBikes_LSTM.h5", handler, retrain_bucket)
