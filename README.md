@@ -136,6 +136,29 @@ The MotionSense data originates from an experiment involving 24 participants per
     - `divvy_retrain`
     - `harddrive_retrain`
 
+**Strengths of pipeline**:
+
+1. Instantaneous streaming
+2. Once predictions are made, it is made instantaneously available.
+3. Starting up EC2 and Stopping of Retraining modules are available easily.
+4. Each use case has good model performance:
+    - Hard Drive:
+        - Modeling remaining useful life
+        - R^2 score: 95.51 %
+    - Motion Sense:
+        - Modeling type of activaty of subject
+        - Test accuracy: 95.20 %
+    - Divvy Bikes:
+        - Modeling the number of trips
+        - MAPE: 22.86%
+5. Cost-effective architecture
+
+Next steps:
+1. Visualization
+    Predictions can be visualized in form of graphs and plots as needed. Currently, the only output is the prediction itself.
+2. Throughput was seen to decrease as stream size increases:
+    - Identified that the rate limiting step is most likely the AWS Lambda that sends each data record to the EC2.
+    - AWS Documentation for troubleshooting: [LINK](https://docs.aws.amazon.com/lambda/latest/dg/troubleshooting-execution.html) - Configure to increase memory and CPU (Potential increase to cost)
 
 ### Solution Cost Estimation
 The combined cost of the end-to-end AWS solution for the three use cases is estimated reach an **annual total of $3,207.22 USD** or equivalently, **$267.27 USD per month.** [Amazon API Gateway](https://aws.amazon.com/api-gateway/) and [AWS Glue](https://aws.amazon.com/glue/) are two of the more costly AWS services employed as part of the comprehensive solution. A detailed break down of the cost estimate by service can be found [here.](https://calculator.aws/#/estimate?id=1af19374e566120b06e9ec56d5f4bd66c7c329d3)
