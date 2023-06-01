@@ -59,8 +59,17 @@ def predict():
 
     # Get the incoming data from the request
     data = request.get_json()
-    data_dict = data[0]
-    data_dict = json.loads(data)[0]
+
+    # check if data is already a list of dictionaries
+    if isinstance(data, list) and isinstance(data[0], dict):
+        data_dict = data[0]
+    else:
+    # If data is not a list of dictionaries, try to parse it as JSON
+        try:
+            data_list = json.loads(data)
+            data_dict = data_list[0] if isinstance(data_list, list) and isinstance(data_list[0], dict) else None
+        except json.JSONDecodeError:
+            print("Failed to decode JSON")
 
     data1 = {col: data_dict[col] for col in column_name}
     data1['trips'] = int(data1['trips'])
