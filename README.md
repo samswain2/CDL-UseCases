@@ -42,6 +42,9 @@ The MotionSense data originates from an experiment involving 24 participants per
 
 ## AWS Implementation
 
+### Instructions
+The instructions to run and test the end-to-end AWS solution for the use cases are provided [here.](./AWS/README.md)
+
 ### Solution Architecture
 
 <img width="707" alt="image" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/f81a4285-f5d2-4246-aa70-0ee453f6021a">
@@ -136,32 +139,28 @@ The MotionSense data originates from an experiment involving 24 participants per
     - `divvy_retrain`
     - `harddrive_retrain`
 
-**Strengths of pipeline**:
-
-1. Instantaneous streaming
-2. Once predictions are made, it is made instantaneously available.
-3. Starting up EC2 and Stopping of Retraining modules are available easily.
-4. Each use case has good model performance:
-    - Hard Drive:
-        - Modeling remaining useful life
-        - R^2 score: 95.51 %
-    - Motion Sense:
-        - Modeling type of activaty of subject
-        - Test accuracy: 95.20 %
-    - Divvy Bikes:
-        - Modeling the number of trips
-        - MAPE: 22.86%
-5. Cost-effective architecture
-
-Next steps:
-1. Visualization
-    Predictions can be visualized in form of graphs and plots as needed. Currently, the only output is the prediction itself.
-2. Throughput was seen to decrease as stream size increases:
-    - Identified that the rate limiting step is most likely the AWS Lambda that sends each data record to the EC2.
-    - AWS Documentation for troubleshooting: [LINK](https://docs.aws.amazon.com/lambda/latest/dg/troubleshooting-execution.html) - Configure to increase memory and CPU (Potential increase to cost)
-
 ### Solution Cost Estimation
 The combined cost of the end-to-end AWS solution for the three use cases is estimated reach an **annual total of $3,207.22 USD** or equivalently, **$267.27 USD per month.** [Amazon API Gateway](https://aws.amazon.com/api-gateway/) and [AWS Glue](https://aws.amazon.com/glue/) are two of the more costly AWS services employed as part of the comprehensive solution. A detailed break down of the cost estimate by service can be found [here.](https://calculator.aws/#/estimate?id=1af19374e566120b06e9ec56d5f4bd66c7c329d3)
+
+### Solution Strengths
+- Low latency streaming
+- Real-time predictions
+- Simplified process to start up the EC2 instances and stop retraining modules
+- Great model performance across all three use cases
+    - Hard Drives: $R^2$ score of 0.96
+    - Motion Sense: $95.2$% test accuracy
+    - Divvy Bikes: MAPE of $22.86$%
+- Cost-effective cloud implementation
+
+### Potential Improvements
+1. Visualization
+    - Currently, the predictions are generated as raw values.
+    - Augmenting an additional service to visualize past and current predictions could help further improve the AWS solution.
+
+2. Throughput 
+    - Throughput appeared to decrease inversely proportional to stream size.
+    - The [lambda](https://docs.aws.amazon.com/lambda/latest/dg/troubleshooting-execution.html) function sending records to EC2 was identified as the likely culprit limiting the maximum potential throughput.
+    - Increasing the compute power and memory could serve as a potential solution. 
 
 ## Final Remarks
 The final scope and objectives of the project has transitioned slightly from the original proposal including the implementation of the three use cases on REFIT and designing a model agnostic feature selection algorithm for time series data. These works could serve as potential avenues for consideration for future projects with CDL. 
