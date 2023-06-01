@@ -22,8 +22,7 @@ def reading_csv(file_location: str) -> List:
 def create_kds(divvy: List) -> None:
 	# Create a kinesis client
 	region_name = 'us-east-2'
-	session = boto3.Session(profile_name='refit3')
-	client = session.client('kinesis', region_name = region_name)
+	client = boto3.client('kinesis', region_name = region_name)
 	counter = 0
 	for i in divvy:
 
@@ -43,7 +42,7 @@ def create_kds(divvy: List) -> None:
 			print(response)
 
 if __name__ == '__main__':
-	file_location = 'AWS\KDS\/final_streamed.csv'
+	file_location = 'AWS/KDS/final_streamed.csv'
 	file_contents = reading_csv(file_location)
 
 	create_kds(file_contents)
