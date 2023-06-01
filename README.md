@@ -1,7 +1,7 @@
 # CDL Industry Practicum Project: IoT Use Cases
 This repository contains the implementation of three IoT use cases on AWS together with deliverables for the [practicum project](https://www.mccormick.northwestern.edu/analytics/curriculum/descriptions/msia-489.html) in collaboration with the Center for Deep Learning (CDL) at Northwestern University. 
 
-<img width="943" alt="flowchart" src="https://github.com/samswain2/CDL-UseCases/assets/113140351/e9d81640-19c0-49a9-92de-399779cfd39a">
+<img src="./Misc/flowchart.png" width="943"/>
 
 ## Overview
 
