@@ -65,6 +65,10 @@ def read_csv_from_s3(bucket_name, file_key):
     download_file_from_s3(bucket_name, file_key, tmp_file_path)
     return pd.read_csv(tmp_file_path)
 
+def filter_df_by_date(df, start_date, end_date):
+    df["time_series_data"] = pd.to_datetime(df["date"])  # ensure that the column is in datetime format
+    mask = (df["time_series_data"] > start_date) & (df["time_series_data"] <= end_date)
+    return df.loc[mask]
 
 ### ----------------- Settings ----------------- ###
 
@@ -131,6 +135,13 @@ logging.info("Combined Data succesfully.")
 # logging.info("Saved updated dataframe to S3 bucket")
 # logging.info('All data loaded')
 
+##------------------ Select date based on date range -------------- ###
+# It is recommended to have at least a quarter's worth of data to retrain for this use case
+# Filter the DataFrame by date range
+start_date = '2016-01-01'
+end_date = '2016-01-04'
+df_retrain = filter_df_by_date(df_retrain, start_date, end_date)
+
 # ### ----------------- Transform data ----------------- ###
 #TO model remaining useful life (based on Amram et al- Interpretable predictive maintenance for hard drives)
 #Step 1 - Finding the failed hard drives
@@ -149,7 +160,7 @@ logging.info("Retraining data - y variable calculated successfully.")
 col_to_drop = ['date','serial_number', 'model', 'end_date', 'failure', 'smart_5_normalized', 'smart_198_raw',
               'smart_198_normalized','smart_199_normalized','smart_241_raw','smart_240_raw','smart_10_raw',
                'smart_197_normalized','smart_188_raw','smart_12_normalized','smart_10_normalized','smart_7_raw','smart_4_normalized',
-               'smart_242_raw']
+               'smart_242_raw', 'time_series_data']
 
 needed_columns = feature_columns + y_variable
 
