@@ -5,7 +5,9 @@ from flask import Flask, request, jsonify
 import json
 import boto3
 import io
+from datetime import datetime
 from transform_data import WindowGenerator
+import pytz
 
 # Create Flask app instance
 app = Flask(__name__)
@@ -89,6 +91,10 @@ def predict():
         
         # Generate prediction
         prediction = model.predict(w1.test, verbose=False)[:,:,0][0]
+        
+        cst = pytz.timezone('America/Chicago')
+        cst_time = datetime.now(cst)
+        print(cst_time)
         print(prediction)
 
         # Return the prediction as JSON

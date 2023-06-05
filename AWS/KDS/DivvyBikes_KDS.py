@@ -1,8 +1,9 @@
 import json
 import csv
 import boto3
-import time
+from datetime import datetime
 from typing import List
+import pytz
 
 def reading_csv(file_location: str) -> List:
 	# Make JSON from the Motion Sense data CSV files
@@ -42,7 +43,12 @@ def create_kds(divvy: List) -> None:
 			print(response)
 
 if __name__ == '__main__':
-	file_location = 'AWS/KDS/final_streamed.csv'
+
+	cst = pytz.timezone('America/Chicago')
+
+	print(datetime.now(cst))
+	file_location = 'AWS\KDS\/final_streamed.csv'
 	file_contents = reading_csv(file_location)
 
 	create_kds(file_contents)
+	print(datetime.now(cst))
