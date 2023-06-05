@@ -2,22 +2,18 @@
 
 # Data manipulation libs
 import logging
-import joblib
 import json
 import tempfile
 import os
 import boto3
 from io import StringIO
+import io
 import pandas as pd
 import numpy as np
-from keras.utils import to_categorical
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import matplotlib.pyplot as plt
 
 # Modeling
 import tensorflow as tf
-from keras.models import Sequential
-from keras.layers import LSTM, Dense, Bidirectional
 
 # Logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] - %(message)s')
@@ -46,6 +42,13 @@ class S3Handler:
                     data = json.load(f)
 
                 df = pd.DataFrame(data) if isinstance(data, list) else pd.DataFrame([data])
+                
+                # Convert start_time from Unix timestamp in milliseconds to datetime
+                df['start_time'] = pd.to_datetime(df['start_time'], unit='ms')
+                
+                # Convert datetime to string format 'YYYY-MM-DD HH:MM:SS'
+                df['start_time'] = df['start_time'].dt.strftime('%Y-%m-%d %H:%M:%S')
+                
                 new_data = pd.concat([new_data, df], ignore_index=True)
 
         return new_data
@@ -61,20 +64,45 @@ class S3Handler:
         self.download_file_from_s3(bucket_name, file_key, tmp_file_path)
         return pd.read_csv(tmp_file_path)
 
+def create_windowed_df(df, start_date, end_date):
+    mask = (df["start_time"] > start_date) & (df["start_time"] <= end_date)
+    windowed_df = df.loc[mask]
+    return windowed_df
+
+def move_data_s3(bucket_name, old_prefix, new_prefix):
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(bucket_name)
+    for obj in bucket.objects.filter(Prefix=old_prefix):
+        old_source = {'Bucket': bucket_name, 'Key': obj.key}
+        new_key = obj.key.replace(old_prefix, new_prefix, 1)
+        new_obj = bucket.Object(new_key)
+        new_obj.copy(old_source)
+        obj.delete()
+
+def load_data(filename="", bucket_name="", s3_key=""):
+    s3 = boto3.client('s3')
+    obj = s3.get_object(Bucket=bucket_name, Key=s3_key + filename)
+    df = pd.read_csv(io.BytesIO(obj['Body'].read()))
+
+    return df
 
 ### ----------------- Settings ----------------- ###
 
 handler = S3Handler()
 
-stream_data_bucket = 'divvy-stream-data'
-retrain_bucket = 'divvy-retraining'
+stream_data_bucket = "divvy-stream-data"
+retrain_bucket = "divvy-retraining"
 train_path_key = "train_df.csv"
+full_train_path_key = "training-data/full_data.csv"
+window_train_path_key = "training-data/windowed_data.csv"
 streamed_data_prefix = "kinesis_data/"
+old_streamed_data_prefix = "kinesis_data_old/"
 ubuntu_home_path = "/home/ubuntu/"
 
 logging.info("Set Keys")
 
-feature_columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "apparent_temp", 
+feature_columns = ["trips", "landmarks", "temp", 
+                   "rel_humidity", "dewpoint", "apparent_temp", 
                    "precip", "rain", "snow", "cloudcover", "windspeed", 
                    "60201", "60202", "60208", "60301", "60302", "60304", 
                    "60601", "60602", "60603", "60604", "60605", "60606", 
@@ -89,10 +117,10 @@ feature_columns = ["trips", "landmarks", "temp", "rel_humidity", "dewpoint", "ap
                    "hours_since_start", "Year sin", "Year cos", 
                    "Week sin", "Week cos", "Day sin", "Day cos"]
 
-### ----------------- Import data ----------------- ### 
+### ----------------- Import data ----------------- ###
 
-# Read current training data
-df_train = handler.read_csv_from_s3(retrain_bucket, train_path_key)
+# Use load_data function to read current training data
+df_train = load_data(filename=train_path_key, bucket_name=retrain_bucket)
 
 logging.info("Retrieved old data successfully")
 
@@ -101,34 +129,49 @@ new_data = handler.get_new_data_from_s3(stream_data_bucket, streamed_data_prefix
 
 logging.info("Retrieved new data successfully")
 
+# After retrieving new data, move it to a new location
+move_data_s3(stream_data_bucket, streamed_data_prefix, old_streamed_data_prefix)
+
+logging.info("Moved processed data to new location")
+
 # Make sure that the new data and the labels have the same order
-new_data = new_data.sort_values('id')
+new_data = new_data.sort_values("start_time")
+
 logging.info("new_data shape: %s", new_data.shape)
-
-# Note that labels are now retrieved from the new_data dataframe
-labels = new_data["trips"].tolist()
-
-logging.info("Retrieved new labels successfully")
 
 # Concat old and new training data
 df_train = pd.concat([df_train, new_data], ignore_index=True)
 
-# Save the dataframe to a csv
+# Save the full old+new DataFrame to a CSV file and upload to S3
 csv_buffer = StringIO()
 df_train.to_csv(csv_buffer, index=False)
+handler.s3.put_object(Bucket=retrain_bucket, Key=full_train_path_key, Body=csv_buffer.getvalue())
 
-# logging.info(df_train["trips"].unique())
-nan_rows = df_train[df_train['trips'].isna()]
+logging.info("Saved full old+new DataFrame to S3 bucket")
+
+# Create a windowed dataframe with a given start and end date
+start_date = "2017-04-09"
+end_date = "2018-04-09"
+df_train_windowed = create_windowed_df(df_train, start_date, end_date)
+
+# Save the windowed DataFrame to a CSV file and upload to S3
+csv_buffer = StringIO()
+df_train_windowed.to_csv(csv_buffer, index=False)
+handler.s3.put_object(Bucket=retrain_bucket, Key=window_train_path_key, Body=csv_buffer.getvalue())
+
+logging.info("Saved windowed DataFrame to S3 bucket")
+
+nan_rows = df_train[df_train["trips"].isna()]
 logging.info("nan_rows shape: %s", nan_rows.shape[0])
-
-# Put the CSV data to the S3 bucket
-handler.s3.put_object(Bucket=retrain_bucket, Key='training-data/updated_training_data.csv', Body=csv_buffer.getvalue())
 
 logging.info("Saved updated dataframe to S3 bucket")
 
-logging.info('All data loaded')
+logging.info("All data loaded")
 
-### ----------------- Transform data ----------------- ###
+# ### ----------------- Transform data ----------------- ###
+
+# Comment below to use entire dataframe for training
+df_train = df_train_windowed
 
 df_train = df_train[feature_columns]
 logging.info("df_train shape: %s", df_train.shape[0])
