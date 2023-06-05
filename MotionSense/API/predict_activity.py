@@ -5,6 +5,8 @@ from sklearn.preprocessing import LabelEncoder
 import keras
 import joblib
 from flask import Flask, request, jsonify
+import pytz
+from datetime import datetime
 
 # Create a Flask app instance
 app = Flask(__name__)
@@ -86,6 +88,9 @@ def predict():
 
     # Get the class label for the prediction
     class_label = encoder.inverse_transform(prediction.argmax(axis=-1))[0]
+
+    cst = pytz.timezone('America/Chicago')
+    print(datetime.now(cst))
 
     # Return the prediction as JSON
     return jsonify({'prediction': class_label})
