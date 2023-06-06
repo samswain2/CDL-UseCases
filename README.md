@@ -27,7 +27,7 @@ The Center for Deep Learning is developing [REFIT](https://www.mccormick.northwe
 - Supporting Staff - Raman Khurana
 
 ### Credits
-The project was completed by the following MSiA students at Northwestern University: Yi (Betty) Chen, Henry Liang, Sharika Mahadevan, Ruben Nakano, Riu Sakaguchi, Sam Swain, and Yumeng (Rena) Zhang. 
+The project was completed by the following MLDS students at Northwestern University: Yi (Betty) Chen, Henry Liang, Sharika Mahadevan, Ruben Nakano, Riu Sakaguchi, Sam Swain, and Yumeng (Rena) Zhang. 
 
 ## IoT Use Cases
 
@@ -158,11 +158,11 @@ The combined cost of the end-to-end AWS solution for the three use cases is esti
     - Augmenting an additional service to visualize past and current predictions could help further improve the AWS solution.
 
 2. Throughput 
-    - Throughput appeared to decrease inversely proportional to stream size.
+    - Throughput appeared to decrease inversely proportional to the stream size.
     - The [lambda](https://docs.aws.amazon.com/lambda/latest/dg/troubleshooting-execution.html) function sending records to EC2 was identified as the likely culprit limiting the maximum potential throughput.
     - Increasing the compute power and memory could serve as a potential solution. 
 
 ## Final Remarks
-The final scope and objectives of the project has transitioned slightly from the original proposal including the implementation of the three use cases on REFIT and designing a model agnostic feature selection algorithm for time series data. These works could serve as potential avenues for consideration for future projects with CDL. 
+The final scope and objectives of the project have transitioned slightly from the original proposal including the implementation of the three use cases on REFIT and designing a model agnostic feature selection algorithm for time series data. These works could serve as potential avenues for consideration for future projects with CDL. 
 
-Finally, the ***final report*** detailing the entire 8 month project can be found inside the `/Deliverables` directory. 
+The ***final report*** detailing the entire 8 month practicum project can be found [here.](./Deliverables/Final-Report.pdf)
