@@ -43,6 +43,8 @@
     ```bash
     wscat -c <WebSocketURL>
     ```
+4. For more information on how to set up the websocket, follow this [playlist.](https://youtube.com/playlist?list=PL5KTLzN85O4J7WKgPUhN6J2EG8rkIcC74)
+
 ## Running the Solution
 ### Stream Data using KDS
 1. CD into the `/KDS` directory.
